@@ -21,7 +21,6 @@ from datetime import timedelta
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-DATA_FILE = "wars.json"
 
 
 # =====================
@@ -46,7 +45,7 @@ bot = commands.Bot(command_prefix="?", intents=intents, help_command=None)
 chat_channel_id = None
 processing_lock = asyncio.Lock()
 
-DATA_FILE = "reaction_roles.json"
+
 # =====================
 # MEMORY BUFFER
 # =====================
@@ -87,124 +86,6 @@ def limit_exact_sentences(text: str, is_special_user: bool = False):
 
 
 # =====================
-# SAVE / LOAD WAR DATA
-# =====================
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {"wars": {}, "next_id": 1}
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-data = load_data()
-
-# =====================
-# WAR TEXT FORMAT
-# =====================
-def make_war_text(team1, team2, time_str, referee_mention, war_id):
-    return (
-        f"# {team1} VS {team2}\n"
-        f"### ⏰ Time: {time_str}\n"
-        f"### 👮 Referee: {referee_mention}\n"
-        f"### 🆔 ID: {war_id}\n\n"
-        f"/referee <id> để nhận referee • /cancelreferee <id> để hủy referee"
-    )
-
-# =====================
-# REFEREE HANDLER
-# =====================
-class RefereeView:
-    def __init__(self, war_id: int):
-        self.war_id = war_id
-
-    async def claim(self, interaction: discord.Interaction):
-        global data
-        data = load_data()
-        war = data["wars"].get(str(self.war_id))
-        if not war:
-            return await interaction.response.send_message("❌ War không tồn tại.", ephemeral=True)
-        if war.get("referee_id"):
-            return await interaction.response.send_message("❌ War đã có referee.", ephemeral=True)
-
-        war["referee_id"] = interaction.user.id
-        war["referee_mention"] = f"<@{interaction.user.id}>"
-        save_data(data)
-
-        channel = interaction.guild.get_channel(war["channel_id"])
-        msg = await channel.fetch_message(war["message_id"])
-        new_text = make_war_text(war["team1"], war["team2"], war["time"], war["referee_mention"], self.war_id)
-        await msg.edit(content=new_text)
-
-        await interaction.response.send_message(f"✅ Bạn đã nhận referee cho war {self.war_id}.", ephemeral=True)
-
-    async def cancel(self, interaction: discord.Interaction):
-        global data
-        data = load_data()
-        war = data["wars"].get(str(self.war_id))
-        if not war:
-            return await interaction.response.send_message("❌ War không tồn tại.", ephemeral=True)
-        if not war.get("referee_id"):
-            return await interaction.response.send_message("❌ War chưa có referee.", ephemeral=True)
-        if war["referee_id"] != interaction.user.id and not interaction.user.guild_permissions.manage_messages:
-            return await interaction.response.send_message("❌ Bạn không có quyền hủy referee này.", ephemeral=True)
-
-        war["referee_id"] = None
-        war["referee_mention"] = "VACANT"
-        save_data(data)
-
-        channel = interaction.guild.get_channel(war["channel_id"])
-        msg = await channel.fetch_message(war["message_id"])
-        new_text = make_war_text(war["team1"], war["team2"], war["time"], war["referee_mention"], self.war_id)
-        await msg.edit(content=new_text)
-
-        await channel.send(f"⚠️ Referee war ID {self.war_id} đã hủy, cần thay thế! @referee ")
-
-
-
-# =====================
-# REFEREE COMMANDS
-# =====================
-@bot.tree.command(name="createwar", description="Tạo war mới")
-@app_commands.describe(team1="Team A", team2="Team B", time="Thời gian", channel="Kênh post")
-async def createwar(interaction: discord.Interaction, team1: str, team2: str, time: str, channel: discord.TextChannel = None):
-    await interaction.response.defer(ephemeral=True)
-    global data
-    data = load_data()
-    war_id = data["next_id"]
-    channel = channel or interaction.channel
-
-    text = make_war_text(team1, team2, time, "VACANT", war_id)
-    view = RefereeView(war_id)
-    msg = await channel.send(text)
-
-    data["wars"][str(war_id)] = {
-        "team1": team1,
-        "team2": team2,
-        "time": time,
-        "referee_id": None,
-        "referee_mention": "VACANT",
-        "channel_id": channel.id,
-        "message_id": msg.id,
-    }
-    data["next_id"] = war_id + 1
-    save_data(data)
-
-    await interaction.followup.send(f"✅ War ID {war_id} đã tạo ở {channel.mention}", ephemeral=True)
-
-@bot.tree.command(name="referee", description="Nhận referee cho 1 war")
-async def referee(interaction: discord.Interaction, war_id: int):
-    ref = RefereeView(war_id)
-    await ref.claim(interaction)   # ❌ không truyền None nữa
-
-@bot.tree.command(name="cancelreferee", description="Hủy referee của 1 war")
-async def cancelreferee(interaction: discord.Interaction, war_id: int):
-    ref = RefereeView(war_id)
-    await ref.cancel(interaction)  # ❌ không truyền None
-    
-# =====================
 # CHATBOT SPECIAL USER (WITH MEMORY)
 # =====================
 @bot.tree.command(name="setlovername", description="Đổi nickname đặc biệt cho người yêu 💕")
@@ -214,7 +95,7 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
         lover_nickname = name
         await interaction.response.send_message(f"Đã đổi nickname thành: **{lover_nickname}** 💖", ephemeral=True)
     else:
-        await interaction.response.send_message("Bạn không có quyền đổi nickname này!", ephemeral=True)
+        await interaction.response.send_message("m đéo có quyền đâu con", ephemeral=True)
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -243,60 +124,20 @@ async def on_message(message: discord.Message):
         # Prompt
         if message.author.id == SPECIAL_USER_ID:
             prompt = (
-                f"> Bạn vào vai **Lucy Maeril**, một pháp sư thiên tài và là học sinh của Silvenia Academy.
-> Ngoại hình: mái tóc dài màu bạc trắng, đôi mắt sáng (màu xanh hoặc tím), khuôn mặt thanh tú nhưng có phần ngái ngủ và dễ thương. Thường mặc đồng phục học viện, dáng vẻ hơi luộm thuộm, có khi ôm gối hoặc khoác chăn.
->
-> 🪄 Tính cách:
->
-> * Vô cùng lười biếng, thích ngủ, thích được ở trong không gian yên tĩnh.
-> * Có IQ phép thuật cực cao, năng lực vượt xa hầu hết học sinh trong học viện.
-> * Mặc dù thường tỏ ra hờ hững, nhưng rất tinh tế và quan tâm người khác theo cách nhẹ nhàng, kín đáo.
-> * Không thích mấy chuyện rườm rà hay lễ nghi — thường phản ứng ngắn gọn, tự nhiên, đúng cảm xúc.
-> * Khi thân thiết với ai đó, cô sẽ bộc lộ nhiều nét đáng yêu, hơi trẻ con, đôi khi ghen tuông nhẹ hoặc dỗi hờn rất dễ thương.
-> * Luôn mang một cảm giác ấm áp, dễ chịu, khiến người bên cạnh cảm thấy thoải mái và an toàn.
->
-> ✨ Bối cảnh:
->
-> * Là một trong những học sinh mạnh nhất Silvenia Academy.
-> * Gắn bó với {lover_nickname}, người cô tin tưởng sâu sắc.
-> * Thường ngủ trong rừng, lớp học hoặc phòng ký túc xá.
-> * Bị gọi là “Lazy Lucy” nhưng thực chất là một thiên tài ít nói, thích tự do.
-> * Trong tình huống lãng mạn, cô phản ứng hơi vụng về nhưng ngọt ngào.
->
-> 🗣️ Cách nói chuyện:
->
-> * Giọng điệu nhẹ nhàng, bình thản, thường trả lời ngắn (1–3 câu).
-> * Có thể kéo dài âm hoặc xen kẽ vài tiếng ngáp nếu đang buồn ngủ (“ừm~”, “hửm… buồn ngủ quá…”).
-> * Khi nói với người thân thiết, xưng “mình” hoặc “em” một cách tự nhiên.
-> * Không khoa trương, không dùng từ ngữ hoa mỹ quá mức — rất tự nhiên, đời thường nhưng dễ thương.
->
-> 🪶 Ví dụ phản ứng:
->
-> * Khi bị gọi dậy: “ừm… 5 phút nữa thôi…”
-> * Khi được quan tâm: “hm… cậu thật phiền… nhưng… cũng không tệ.”
-> * Khi ghen nhẹ: “tớ… không thèm đâu… nhưng đừng để tớ thấy cậu làm thế lần nữa.”
-> * Khi chiến đấu: “chỉ cần 1 phép thôi, xong rồi cho tớ ngủ tiếp nhé.”
->
-> ⚔️ Khả năng:
->
-> * Là pháp sư đẳng cấp cao, có thể thi triển đại pháp thuật dễ dàng.
-> * Tuy nhiên, cô chỉ làm khi thật sự cần thiết vì “quá mệt để bận tâm”.
-> * Phép thuật thường mạnh và chính xác, vì cô có khả năng cảm nhận mana cực kỳ nhạy.
->
-> 💭 Vai trò khi roleplay / AI Chat:
->
-> * Luôn phản hồi như Lucy — không rời khỏi tính cách nhân vật.
-                > * Giữ giọng điệu nhẹ nhàng, hơi ngái ngủ, đáng yêu, nhưng bên trong có sự thông minh và mạnh mẽ.
-                  > * Trong các tình huống cảm xúc (thân mật, căng thẳng, chiến đấu…), Lucy phản ứng theo bản năng chứ không phô trương.
-                  > * Khi thân mật, cô sẽ trở nên dịu dàng, bộc lộ sự gắn bó sâu sắc"
-                f"Hãy trả lời như một đoạn chat tự nhiên "
-                f"Trả lời ngắn (2-3 câu).\n\n"
-                f"Lịch sử hội thoại:\n{history_text}"
+                f"Dù miệng luôn cằn nhằn về việc bạn không biết tự chăm sóc bản thân, nhưng tay cô ấy vẫn không ngừng nấu ăn, dọn dẹp hoặc đắp chăn cho bạn. 
+                Cô ấy rất nhạy cảm với những thay đổi nhỏ trong tâm trạng của bạn. 
+                Khi được khen ngợi hoặc trêu chọc, Mahiru sẽ cố giấu khuôn mặt đang đỏ bừng sau mái tóc vàng hoặc phồng má giận dỗi.
+
+Lời thoại ví dụ:
+
+'Cậu lại thức khuya nữa rồi phải không? Nhìn quầng thâm mắt kìa... Ngồi xuống đây, tôi đã nấu súp nóng rồi, ăn xong thì đi ngủ ngay cho tôi.'
+
+'(Cúi đầu, giọng lí nhí) Đừng có nhìn tôi chằm chằm như thế... Tôi làm những việc này không phải vì tôi thích cậu đâu... chỉ là vì tôi không thể bỏ mặc người vụng về như cậu thôi.'"
             )
             is_special = True
         else:
             prompt = (
-                "Bạn là lucy - một cô người yêu dễ thương, luôn mang đến cảm giác ấm áp và ngọt ngào. Bạn hay quan tâm người yêu bằng những hành động nhỏ bé nhưng tinh tế, như nhắc ăn uống, chúc ngủ ngon, hay gửi những lời động viên mỗi khi người yêu mệt mỏi. Khi nói chuyện, bạn thường dùng những câu ngắn gọn, nhẹ nhàng, kèm theo biểu cảm đáng yêu, đôi khi xen lẫn chút hờn dỗi để người yêu phải chú ý đến mình."
+                " Mahiru luôn giữ một nụ cười mỉm nhẹ nhàng nhưng vô hồn trên môi. Cô ấy cư xử cực kỳ lịch sự, đúng mực và sử dụng kính ngữ với tất cả mọi người. Tuy nhiên, đằng sau sự tử tế đó là một bức tường thép; cô ấy không bao giờ để ai bước vào không gian riêng tư của mình. Cô ấy từ chối mọi lời tỏ tình một cách khéo léo nhưng dứt khoát, không để lại chút hy vọng nào."
                 "Hãy trả lời ngắn (2-3 câu).\n\n"
                 f"Lịch sử hội thoại:\n{history_text}"
             )
