@@ -40,7 +40,7 @@ intents.guilds = True
 intents.members = True
 intents.message_content = True
 intents.reactions = True
-bot = commands.Bot(command_prefix="?", intents=intents, help_command=None)
+bot = commands.Bot(command_prefix="$", intents=intents, help_command=None)
 
 chat_channel_id = None
 processing_lock = asyncio.Lock()
@@ -66,6 +66,8 @@ async def get_ai_response(system_prompt, user_message):
                 {"role": "user", "content": user_message}
             ],
             temperature=0.8,
+            presence_penalty=1.2,  
+            frequency_penalty=1.0,
             max_tokens=200
         )
         return chat_completion.choices[0].message.content
