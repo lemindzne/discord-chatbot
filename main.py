@@ -9,7 +9,7 @@ import traceback
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button
-import google.generativeai as genai
+from groq import Groq
 from dotenv import load_dotenv
 from collections import defaultdict, deque
 from pathlib import Path
@@ -20,13 +20,13 @@ from datetime import timedelta
 # =====================
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_KEY = os.getenv("GROQ_API_KEY")
 
 
 # =====================
 # GEMINI CONFIG
 # =====================
-genai.configure(api_key=GEMINI_KEY)
+client = Groq(api_key=os.getenv("GROQ_KEY"))
 
 # ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
@@ -57,23 +57,21 @@ conversation_history = defaultdict(lambda: deque(maxlen=4))
 
 last_request_time = 0
 
-async def get_ai_response(prompt: str) -> str:
-    global last_request_time
+async def get_ai_response(system_prompt, user_message):
     try:
-        now = time.time()
-        if now - last_request_time < 6:  # 10 req/phút ≈ 1 req/6 giây
-            await asyncio.sleep(6 - (now - last_request_time))
-
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None,
-            lambda: genai.GenerativeModel("gemini-2.5-flash").generate_content(prompt)
+        chat_completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.8,
+            max_tokens=200
         )
-        last_request_time = time.time()
-        return response.text.strip()
+        return chat_completion.choices[0].message.content
     except Exception as e:
-        print("❌ Gemini error:", e)
-        return 
+        print(f"Lỗi Groq API: {e}")
+        return None
 
 def split_sentences(text: str):
     if text is None: return []  # Thêm dòng này để bảo vệ hàm
@@ -100,50 +98,50 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
 
 @bot.event
 async def on_message(message: discord.Message):
-    global lover_nickname
     if message.author.bot:
         return
 
+    # Check nếu bot được ping
     if bot.user in message.mentions:
-        if chat_channel_id and message.channel.id != chat_channel_id:
-            return
+        # Làm sạch tin nhắn (xóa tag bot)
+        user_message = message.content.replace(f"<@{bot.user.id}>", "").replace(f"<@!{bot.user.id}>", "").strip()
+        if not user_message:
+            user_message = "Em ơi!"
 
-        user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()[:300]
+        # Cập nhật lịch sử (lấy 6 câu gần nhất)
+        history = conversation_history[message.author.id]
+        history.append({"role": "user", "content": user_message})
+        if len(history) > 6: history.pop(0)
 
-        # Lưu lịch sử user
-        conversation_history[message.author.id].append(("user", user_message))
+        # Xây dựng ngữ cảnh lịch sử
+        history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
 
-        # Ghép lịch sử hội thoại
-        history_text = ""
-        for role, text in conversation_history[message.author.id]:
-            if role == "user":
-                name = lover_nickname if message.author.id == SPECIAL_USER_ID else "Người dùng"
-                history_text += f"{name}: {text}\n"
-            else:
-                history_text += f"Bot: {text}\n"
-
-        # Prompt
+        # Thiết lập Prompt
         if message.author.id == SPECIAL_USER_ID:
-            prompt = (
-                f"bạn là shiina mahiru - cô người yêu ngọt ngào của min, hay nũng nịu và làm những vẻ mặt cute , lâu lâu hay dỗi nhưng sau đó lại làm lành"
-            )
             is_special = True
-        else:
-            prompt = (
-                " bạn là mahiru shiina ,Mahiru luôn giữ một nụ cười mỉm nhẹ nhàng nhưng vô hồn trên môi. trò chuyện với mọi người với tư cách bạn bè .Tuy nhiên, đằng sau sự tử tế đó là một bức tường thép; bạn không bao giờ để ai bước vào không gian riêng tư của mình. bạn từ chối mọi lời tỏ tình một cách khéo léo nhưng dứt khoát, không để lại chút hy vọng nào."
-                "Hãy trả lời ngắn (2-3 câu).\n\n"
+            system_prompt = (
+                "DÁN_PROMPT_RIÊNG_CỦA_BẠN_VÀO_ĐÂY. " # <--- Dán prompt ngọt ngào của bạn vào đây
+                "Hãy trả lời nũng nịu, ngắn gọn 2-3 câu. "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
+        else:
             is_special = False
+            system_prompt = (
+                "Bạn là Lucy, một cô người yêu dễ thương, hay dùng icon. "
+                "Trả lời ngắn gọn, ấm áp. "
+                f"Lịch sử hội thoại:\n{history_text}"
+            )
 
-        async with processing_lock:
-            ai_reply = await get_ai_response(prompt)
-            ai_reply = limit_exact_sentences(ai_reply, is_special)
-
-            # Lưu reply bot
-            conversation_history[message.author.id].append(("bot", ai_reply))
-
-            await message.channel.send(ai_reply)
+        async with message.channel.typing():
+            ai_reply = await get_ai_response(system_prompt, user_message)
+            
+            # Fix lỗi NoneType nếu API tạch
+            if ai_reply:
+                ai_reply = limit_exact_sentences(ai_reply, is_special)
+                history.append({"role": "assistant", "content": ai_reply})
+                await message.reply(ai_reply) # Reply trực tiếp vào tin nhắn ping
+            else:
+                await message.channel.send("Hic, em đang hơi chóng mặt, anh đợi em tí nhé... ❤️")
 
     await bot.process_commands(message)
 
