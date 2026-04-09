@@ -9,7 +9,7 @@ import traceback
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button
-import google.genai as genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from collections import defaultdict, deque
 from pathlib import Path
@@ -26,7 +26,7 @@ GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 # =====================
 # GEMINI CONFIG
 # =====================
-client = genai.Client(api_key=GEMINI_KEY)
+genai.configure(api_key=GEMINI_KEY)
 
 # ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
