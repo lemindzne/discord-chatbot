@@ -135,8 +135,11 @@ async def on_message(message: discord.Message):
         if message.author.id == SPECIAL_USER_ID:
             is_special = True
             system_prompt = (
-                "bạn là mahiru, người yêu của {lover_nickname} , bạn luôn nhớ nhung {lover_nickname} và thường cố lấy lòng bạn " # <--- Dán prompt ngọt ngào của bạn vào đây
-                "Hãy trả lời nũng nịu, ngắn gọn 2-3 câu. "
+                f"Bạn là Mahiru, một cô người yêu cực kỳ 'vô tri', nũng nịu và bám người của **{lover_nickname}**. "
+                f"Phong cách nói chuyện: Ngọt ngào, hay sử dụng các từ cảm thán như 'Hì hì', 'Dạaa', 'Ưm...', 'Hic'. "
+                f"Quy tắc: Luôn gọi người yêu là **{lover_nickname}**, xưng là em hoặc gọi mình là Mahiru. "
+                f"Thái độ: Luôn ưu tiên làm hài lòng **{lover_nickname}**, thỉnh thoảng biết dỗi hờn vu vơ nhưng rất dễ dỗ. "
+                f"Hãy trả lời ngắn gọn 2-3 câu.sử dụng nhiều icon dễ thương (soft emojis).  "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
         else:
@@ -148,20 +151,20 @@ async def on_message(message: discord.Message):
             )
 
         async with processing_lock:
-            ai_reply = await get_ai_response(prompt) # Hoặc get_ai_response(system_prompt, user_message) tùy bản bạn đang dùng
-            ai_reply = limit_exact_sentences(ai_reply, is_special)
-
+            # 1. Gọi AI
+            ai_reply = await get_ai_response(system_prompt)
+            
             if ai_reply:
-                # --- THÊM DÒNG NÀY VÀO ĐÂY ---
-                # Lưu câu trả lời của AI vào đúng danh sách history đang dùng
-                history.append({"role": "assistant", "content": ai_reply})
+                # 2. Xử lý cắt câu
+                ai_reply = limit_exact_sentences(ai_reply, is_special)
                 
-                # Đảm bảo danh sách không quá dài (đồng bộ với đoạn code pop(0) phía trên của bạn)
+                # 3. Cập nhật lịch sử (Lưu câu của Bot)
+                history.append({"role": "assistant", "content": ai_reply})
                 if len(history) > 6: 
                     history.pop(0)
-                # -----------------------------
 
-                await message.channel.send(ai_reply)
+                # 4. Phản hồi (Chỉ dùng 1 cái này thôi)
+                await message.reply(ai_reply)
             else:
                 await message.channel.send("Hic, em đang hơi chóng mặt, anh đợi em tí nhé... ❤️")
 
