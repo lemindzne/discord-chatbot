@@ -147,14 +147,21 @@ async def on_message(message: discord.Message):
                 f"Lịch sử hội thoại:\n{history_text}"
             )
 
-        async with message.channel.typing():
-            ai_reply = await get_ai_response(system_prompt, user_message)
-            
-            # Fix lỗi NoneType nếu API tạch
+        async with processing_lock:
+            ai_reply = await get_ai_response(prompt) # Hoặc get_ai_response(system_prompt, user_message) tùy bản bạn đang dùng
+            ai_reply = limit_exact_sentences(ai_reply, is_special)
+
             if ai_reply:
-                ai_reply = limit_exact_sentences(ai_reply, is_special)
+                # --- THÊM DÒNG NÀY VÀO ĐÂY ---
+                # Lưu câu trả lời của AI vào đúng danh sách history đang dùng
                 history.append({"role": "assistant", "content": ai_reply})
-                await message.reply(ai_reply) # Reply trực tiếp vào tin nhắn ping
+                
+                # Đảm bảo danh sách không quá dài (đồng bộ với đoạn code pop(0) phía trên của bạn)
+                if len(history) > 6: 
+                    history.pop(0)
+                # -----------------------------
+
+                await message.channel.send(ai_reply)
             else:
                 await message.channel.send("Hic, em đang hơi chóng mặt, anh đợi em tí nhé... ❤️")
 
