@@ -76,6 +76,7 @@ async def get_ai_response(prompt: str) -> str:
         return 
 
 def split_sentences(text: str):
+    if text is None: return []  # Thêm dòng này để bảo vệ hàm
     sentences = re.split(r'(?<=[.!?])\s+', text.strip())
     return [s.strip() for s in sentences if s.strip()]
 
