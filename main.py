@@ -26,7 +26,7 @@ GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 # =====================
 # GEMINI CONFIG
 # =====================
-genai.configure(api_key=GEMINI_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
