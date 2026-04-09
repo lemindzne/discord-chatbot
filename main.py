@@ -73,7 +73,7 @@ async def get_ai_response(prompt: str) -> str:
         return response.text.strip()
     except Exception as e:
         print("❌ Gemini error:", e)
-        return "Em bị giới hạn quota, thử lại sau nhé 💕"
+        return 
 
 def split_sentences(text: str):
     sentences = re.split(r'(?<=[.!?])\s+', text.strip())
