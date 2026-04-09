@@ -23,14 +23,6 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 DATA_FILE = "wars.json"
 
-ROLE_IDS = {
-    "referee": int(os.getenv("REFEREE_ROLE_ID", 0)),
-    "trial": int(os.getenv("TRIAL_REFEREE_ROLE_ID", 0)),
-    "experienced": int(os.getenv("EXPERIENCED_REFEREE_ROLE_ID", 0)),
-}
-
-TICKET_CATEGORY_ID = int(os.getenv("TICKET_CATEGORY_ID", 0))
-SUPPORT_ROLE_ID = int(os.getenv("SUPPORT_ROLE_ID", 0))
 
 # =====================
 # GEMINI CONFIG
@@ -39,7 +31,7 @@ genai.configure(api_key=GEMINI_KEY)
 
 # ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
-lover_nickname = "ed rothtaylor"
+lover_nickname = "min đẹp trai"
 
 # =====================
 # BOT SETUP
