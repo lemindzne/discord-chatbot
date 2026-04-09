@@ -152,7 +152,7 @@ async def on_message(message: discord.Message):
 
         async with processing_lock:
             # 1. Gọi AI
-            ai_reply = await get_ai_response(system_prompt)
+            ai_reply = await get_ai_response(system_prompt, user_message)
             
             if ai_reply:
                 # 2. Xử lý cắt câu
