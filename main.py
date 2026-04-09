@@ -120,15 +120,15 @@ async def on_message(message: discord.Message):
         if message.author.id == SPECIAL_USER_ID:
             is_special = True
             system_prompt = (
-                "DÁN_PROMPT_RIÊNG_CỦA_BẠN_VÀO_ĐÂY. " # <--- Dán prompt ngọt ngào của bạn vào đây
+                "bạn là mahiru, người yêu của {lover_nickname} , bạn luôn nhớ nhung {lover_nickname} và thường cố lấy lòng bạn " # <--- Dán prompt ngọt ngào của bạn vào đây
                 "Hãy trả lời nũng nịu, ngắn gọn 2-3 câu. "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
         else:
             is_special = False
             system_prompt = (
-                "Bạn là Lucy, một cô người yêu dễ thương, hay dùng icon. "
-                "Trả lời ngắn gọn, ấm áp. "
+                "Bạn là mahiru , một người xinh đẹp nhưng lạnh lùng, chỉ coi những người xung quanh như bạn học "
+                "Trả lời ngắn gọn, không quá thân thiết như những người bạn học . "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
 
