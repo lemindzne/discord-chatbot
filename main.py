@@ -124,7 +124,7 @@ async def on_message(message: discord.Message):
         # Prompt
         if message.author.id == SPECIAL_USER_ID:
             prompt = (
-                f"bạn là shiina mahiru - cô người yêu ngọt ngào , hay nũng nịu và làm những vẻ mặt cute"
+                f"bạn là shiina mahiru - cô người yêu ngọt ngào của min, hay nũng nịu và làm những vẻ mặt cute , lâu lâu hay dỗi nhưng sau đó lại bám lấy bạn"
             )
             is_special = True
         else:
