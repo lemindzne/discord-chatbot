@@ -22,6 +22,11 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GROQ_KEY = os.getenv("GROQ_API_KEY")
 
+chat_channel_id = os.getenv("CHAT_CHANNEL_ID")
+if chat_channel_id:
+    chat_channel_id = int(chat_channel_id)
+else:
+    chat_channel_id = None
 
 # =====================
 # GEMINI CONFIG
@@ -100,11 +105,19 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
 
 @bot.event
 async def on_message(message: discord.Message):
+    global chat_channel_id
+    
     if message.author.bot:
         return
 
     # Check nếu bot được ping
     if bot.user in message.mentions:
+        
+        if chat_channel_id is not None:
+            if message.channel.id != chat_channel_id:
+                # In ra log để bạn kiểm tra nếu muốn
+                print(f"Bỏ qua vì chat sai kênh: {message.channel.id} != {chat_channel_id}")
+                return
         # Làm sạch tin nhắn (xóa tag bot)
         user_message = message.content.replace(f"<@{bot.user.id}>", "").replace(f"<@!{bot.user.id}>", "").strip()
         if not user_message:
