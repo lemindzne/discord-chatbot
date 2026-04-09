@@ -70,10 +70,10 @@ async def get_ai_response(system_prompt, user_message):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.8,
-            presence_penalty=1.2,  
+            temperature=0.9,
+            presence_penalty=1.5,  
             frequency_penalty=1.0,
-            max_tokens=200
+            max_tokens=150
         )
         return chat_completion.choices[0].message.content
     except Exception as e:
