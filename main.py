@@ -9,7 +9,7 @@ import traceback
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button
-import google.generativeai as genai
+import google.genai as genai
 from dotenv import load_dotenv
 from collections import defaultdict, deque
 from pathlib import Path
