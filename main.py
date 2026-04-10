@@ -66,7 +66,7 @@ last_request_time = 0
 async def get_ai_response(system_prompt, user_message):
     try:
         chat_completion = client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
@@ -74,7 +74,8 @@ async def get_ai_response(system_prompt, user_message):
             temperature=0.95,
             presence_penalty=1.5,  
             frequency_penalty=1.0,
-            max_tokens=150
+            top_p=0.9,
+            max_tokens=250
         )
         return chat_completion.choices[0].message.content
     except Exception as e:
@@ -175,7 +176,7 @@ async def on_message(message: discord.Message):
                 
                 # 3. Cập nhật lịch sử (Lưu câu của Bot)
                 history.append({"role": "assistant", "content": ai_reply})
-                if len(history) > 6: 
+                if len(history) > 50: 
                     history.pop(0)
 
                 # 4. Phản hồi (Chỉ dùng 1 cái này thôi)
