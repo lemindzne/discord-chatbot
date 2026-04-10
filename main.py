@@ -71,7 +71,7 @@ async def get_ai_response(system_prompt, user_message):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.9,
+            temperature=0.95,
             presence_penalty=1.5,  
             frequency_penalty=1.0,
             max_tokens=150
@@ -197,7 +197,7 @@ async def setchannel(interaction: discord.Interaction, channel: discord.TextChan
     # Lưu ID kênh cho server hiện tại
     server_channels[interaction.guild.id] = channel.id
     
-    await interaction.response.send_message(f"✅ Tại server này, em sẽ chỉ chat trong kênh: {channel.mention}")
+    await interaction.response.send_message(f"✅ em sẽ chỉ chat trong kênh: {channel.mention} :3")
     
 @bot.tree.command(name="clearchannel", description="Cho phép bot chat mọi kênh ở server này")
 async def clearchannel(interaction: discord.Interaction):
