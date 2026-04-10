@@ -120,11 +120,14 @@ async def on_message(message: discord.Message):
     # Check nếu bot được ping
     if bot.user in message.mentions:
         
-        if chat_channel_id is not None:
-            if message.channel.id != chat_channel_id:
-                # In ra log để bạn kiểm tra nếu muốn
-                print(f"Bỏ qua vì chat sai kênh: {message.channel.id} != {chat_channel_id}")
+        target_channel_id = server_channels.get(message.guild.id)
+
+        # KIỂM TRA: 
+        # Nếu server này ĐÃ SET kênh mà bạn lại tag ở kênh khác -> Bỏ qua
+        if target_channel_id is not None:
+            if message.channel.id != target_channel_id:
                 return
+                
         # Làm sạch tin nhắn (xóa tag bot)
         user_message = message.content.replace(f"<@{bot.user.id}>", "").replace(f"<@!{bot.user.id}>", "").strip()
         if not user_message:
@@ -203,7 +206,7 @@ async def clearchannel(interaction: discord.Interaction):
         del server_channels[interaction.guild_id]
         await interaction.response.send_message(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
     else:
-        await interaction.response.send_message("Server này vốn đang ở chế độ mặc định rồi ạ!", ephemeral=True)
+        await interaction.response.send_message("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
 
 @bot.tree.command(name="resetmemory", description="Xoá lịch sử hội thoại của bạn với bot")
 async def resetmemory(interaction: discord.Interaction):
