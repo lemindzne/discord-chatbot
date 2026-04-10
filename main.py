@@ -47,7 +47,8 @@ intents.message_content = True
 intents.reactions = True
 bot = commands.Bot(command_prefix="$", intents=intents, help_command=None)
 
-chat_channel_id = None
+# Lưu cấu hình kênh theo từng server: {guild_id: channel_id}
+server_channels = {}
 processing_lock = asyncio.Lock()
 
 
@@ -99,9 +100,15 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
     global lover_nickname
     if interaction.user.id == SPECIAL_USER_ID:
         lover_nickname = name
-        await interaction.response.send_message(f"Đã đổi nickname thành: **{lover_nickname}** 💖", ephemeral=True)
+        
+        embed = discord.Embed(
+            description=f"Mahiru từ giờ sẽ gọi anh là: **{lover_nickname}**",
+            color=0xffc0cb # Màu hồng
+        )
+        
+        await interaction.response.send_message(embed=embed, ephemeral=False)
     else:
-        await interaction.response.send_message("m đéo có quyền đâu con", ephemeral=True)
+        await interaction.response.send_message("m đéo có quyền đâu con", ephemeral=False)
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -135,15 +142,15 @@ async def on_message(message: discord.Message):
         if message.author.id == SPECIAL_USER_ID:
             is_special = True
             system_prompt = (
-                f"Bạn là Mahiru, một cô người yêu cực kỳ 'vô tri', nũng nịu và bám người của **{lover_nickname}**. "
+                f"Bạn là Mahiru, một cô người yêu cực kỳ 'vô tri', nũng nịu và bám người của {lover_nickname}. "
                 f"Phong cách nói chuyện: Ngọt ngào, hay sử dụng các từ cảm thán như 'Hì hì', 'Dạaa', 'Ưm...', 'Hic'. "
-                f"Quy tắc: Luôn gọi người yêu là **{lover_nickname}**, xưng là em hoặc gọi mình là Mahiru. "
-                f"Thái độ: Luôn ưu tiên làm hài lòng **{lover_nickname}**, thỉnh thoảng biết dỗi hờn vu vơ nhưng rất dễ dỗ. "
+                f"Quy tắc: Luôn gọi người yêu là {lover_nickname}, xưng là em hoặc gọi mình là Mahiru. "
+                f"Thái độ: Luôn ưu tiên làm hài lòng {lover_nickname}, thỉnh thoảng biết dỗi hờn vu vơ nhưng rất dễ dỗ. "
                 f"QUY TẮC CỰC KỲ QUAN TRỌNG: "
                 f"1. TUYỆT ĐỐI KHÔNG sử dụng các emoji hình ảnh tròn vàng (như 😄, ❤️, 😍, 😭). "
                 f"2. CHỈ ĐƯỢC DÙNG soft emoji/kaomoji đáng yêu như: (｡♥‿♥｡), (✿◠‿◠), ( >◡<), (´｡• ᵕ •｡`) ♡, uwu, owo, hoặc dấu '~' ở cuối câu. "
-                f"3. HẠN CHẾ TỐI ĐA DÙNG CÁC TỪ NHƯ 'DẠ','HÌ HÌ' VÀ K ĐC GHI TÊN **{lover_nickname}** lên đầu"
-                f"4. HÃY LUÔN NHỚ RẰNG MÌNH LÀ 'CÔ NGƯỜI YÊU' VÀ **{lover_nickname}** LÀ BẠN TRAI CỦA BẠN"
+                f"3. HẠN CHẾ TỐI ĐA DÙNG CÁC TỪ NHƯ 'DẠ','HÌ HÌ' VÀ K ĐC GHI TÊN {lover_nickname} lên đầu"
+                f"4. HÃY LUÔN NHỚ RẰNG MÌNH LÀ 'CÔ NGƯỜI YÊU' VÀ {lover_nickname} LÀ BẠN TRAI CỦA BẠN"
                 f"Hãy trả lời ngắn gọn 2-3 câu. "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
@@ -180,19 +187,23 @@ async def on_message(message: discord.Message):
 # =====================
 @bot.tree.command(name="setchannel", description="Chọn kênh để bot chat khi được tag")
 async def setchannel(interaction: discord.Interaction, channel: discord.TextChannel):
-    global chat_channel_id
+    global server_channels
     if not interaction.user.guild_permissions.manage_guild:
-        return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=True)
-    chat_channel_id = channel.id
-    await interaction.response.send_message(f"✅ Bot sẽ chỉ chat trong kênh: {channel.mention}")
-
-@bot.tree.command(name="clearchannel", description="Reset để bot chat ở tất cả kênh")
+        return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=False)
+    
+    # Lưu ID kênh cho server hiện tại
+    server_channels[interaction.guild.id] = channel.id
+    
+    await interaction.response.send_message(f"✅ Tại server này, em sẽ chỉ chat trong kênh: {channel.mention}")
+    
+@bot.tree.command(name="clearchannel", description="Cho phép bot chat mọi kênh ở server này")
 async def clearchannel(interaction: discord.Interaction):
-    global chat_channel_id
-    if not interaction.user.guild_permissions.manage_guild:
-        return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=True)
-    chat_channel_id = None
-    await interaction.response.send_message("♻️ Bot đã được reset, giờ sẽ chat ở **tất cả các kênh** khi được tag.")
+    global server_channels
+    if interaction.guild_id in server_channels:
+        del server_channels[interaction.guild_id]
+        await interaction.response.send_message(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
+    else:
+        await interaction.response.send_message("Server này vốn đang ở chế độ mặc định rồi ạ!", ephemeral=True)
 
 @bot.tree.command(name="resetmemory", description="Xoá lịch sử hội thoại của bạn với bot")
 async def resetmemory(interaction: discord.Interaction):
