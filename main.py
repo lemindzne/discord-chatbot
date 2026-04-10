@@ -102,7 +102,7 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
         lover_nickname = name
         
         embed = discord.Embed(
-            description=f"Mahiru từ giờ sẽ gọi anh là: **{lover_nickname}**",
+            description=f"**Mahiru từ giờ sẽ gọi anh là: {lover_nickname}**",
             color=0xffc0cb # Màu hồng
         )
         
