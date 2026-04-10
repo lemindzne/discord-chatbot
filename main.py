@@ -66,7 +66,7 @@ last_request_time = 0
 async def get_ai_response(system_prompt, user_message):
     try:
         chat_completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama3-70b-8192",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
