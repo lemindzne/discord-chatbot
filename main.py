@@ -18,7 +18,7 @@ from datetime import timedelta
 # =====================
 # LOAD CONFIG
 # =====================
-load_dotenv()
+load_dotenv() 
 TOKEN = os.getenv("DISCORD_TOKEN")
 GROQ_KEY = os.getenv("GROQ_API_KEY")
 
