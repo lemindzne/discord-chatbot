@@ -254,7 +254,6 @@ async def force_sync(ctx):
 @bot.event
 async def on_ready():
     # Tắt tự động sync để tránh lỗi Rate Limit (429)
-    await bot.tree.sync()
     print(f"✅ Mahiru online: {bot.user}")
     
 bot.run(TOKEN)
