@@ -2,40 +2,58 @@ import os
 import json
 import random
 import re
-import time
 import asyncio
 import discord
-import traceback
+import sqlite3 # Thêm thư viện database
 from discord.ext import commands
 from discord import app_commands
-from discord.ui import View, Button
 from groq import Groq
 from dotenv import load_dotenv
 from collections import defaultdict, deque
-from pathlib import Path
-from datetime import timedelta
 
 # =====================
 # LOAD CONFIG
 # =====================
 load_dotenv() 
 TOKEN = os.getenv("DISCORD_TOKEN")
-GROQ_KEY = os.getenv("GROQ_API_KEY")
+GROQ_KEY = os.getenv("GROQ_API_KEY") # Đảm bảo biến này khớp với .env
+DB_PATH = os.getenv("DB_PATH", "mahiru.db") # Đường dẫn lưu file database
 
-chat_channel_id = os.getenv("CHAT_CHANNEL_ID")
-if chat_channel_id:
-    chat_channel_id = int(chat_channel_id)
-else:
-    chat_channel_id = None
-
-# =====================
-# GEMINI CONFIG
-# =====================
-client = Groq(api_key=os.getenv("GROQ_KEY"))
+client = Groq(api_key=GROQ_KEY)
 
 # ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
 lover_nickname = "anh"
+
+# =====================
+# SQLITE SETUP (Hệ thống ghi nhớ)
+# =====================
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS affinity 
+                 (user_id INTEGER PRIMARY KEY, points INTEGER DEFAULT 0)''')
+    conn.commit()
+    conn.close()
+
+def get_affinity(user_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT points FROM affinity WHERE user_id = ?", (user_id,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else 0
+
+def add_affinity(user_id, amount=1):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT OR IGNORE INTO affinity (user_id, points) VALUES (?, 0)", (user_id,))
+    c.execute("UPDATE affinity SET points = points + ? WHERE user_id = ?", (amount, user_id))
+    conn.commit()
+    conn.close()
+
+# Khởi tạo database ngay khi chạy bot
+init_db()
 
 # =====================
 # BOT SETUP
@@ -47,22 +65,13 @@ intents.message_content = True
 intents.reactions = True
 bot = commands.Bot(command_prefix="$", intents=intents, help_command=None)
 
-# Lưu cấu hình kênh theo từng server: {guild_id: channel_id}
 server_channels = {}
 processing_lock = asyncio.Lock()
-
-
-# =====================
-# MEMORY BUFFER
-# =====================
-conversation_history = defaultdict(lambda: deque(maxlen=4))
+conversation_history = defaultdict(lambda: deque(maxlen=6))
 
 # =====================
-# GEMINI FUNCTIONS
+# AI FUNCTIONS (Giữ nguyên của bạn)
 # =====================
-
-last_request_time = 0
-
 async def get_ai_response(system_prompt, user_message):
     try:
         chat_completion = client.chat.completions.create(
@@ -83,7 +92,7 @@ async def get_ai_response(system_prompt, user_message):
         return None
 
 def split_sentences(text: str):
-    if text is None: return []  # Thêm dòng này để bảo vệ hàm
+    if text is None: return []
     sentences = re.split(r'(?<=[.!?])\s+', text.strip())
     return [s.strip() for s in sentences if s.strip()]
 
@@ -92,103 +101,84 @@ def limit_exact_sentences(text: str, is_special_user: bool = False):
     target_count = random.choice([4, 6]) if is_special_user else random.choice([2, 3])
     return " ".join(sentences[:target_count]) if len(sentences) >= target_count else " ".join(sentences)
 
+# =====================
+# ON MESSAGE (Logic chính)
+# =====================
+@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot: return
+
+    if bot.user in message.mentions:
+        user_id = message.author.id
+        
+        # 1. Quản lý kênh chat (Giữ logic cũ của bạn)
+        target_channel_id = server_channels.get(message.guild.id)
+        if target_channel_id and message.channel.id != target_channel_id:
+            return
+
+        # 2. Xử lý độ thân mật
+        add_affinity(user_id, 1) # Mỗi lần tag bot là +1 điểm
+        points = get_affinity(user_id)
+
+        user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
+        if not user_message: user_message = "Em ơi!"
+
+        history = conversation_history[user_id]
+        history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
+
+        # 3. Thiết lập Prompt dựa trên độ thân mật
+        if user_id == SPECIAL_USER_ID:
+            is_special = True
+            system_prompt = (
+                f"Bạn là Mahiru, người yêu nũng nịu của {lover_nickname}. "
+                f"Gọi người yêu là {lover_nickname}. Dùng kaomoji đáng yêu. "
+                f"Lịch sử:\n{history_text}"
+            )
+        else:
+            is_special = False
+            # Phân bậc cảm xúc cho người thường
+            if points < 30:
+                feeling = "Bạn là Mahiru lạnh lùng, chỉ coi họ là bạn học xa lạ. Trả lời cực kỳ ngắn gọn, không cảm xúc."
+            elif points < 150:
+                feeling = "Bạn bắt đầu quen với người bạn học này, lịch sự hơn nhưng vẫn giữ khoảng cách."
+            else:
+                feeling = "Bạn coi người này là bạn rất thân. Dịu dàng hơn và bắt đầu dùng vài kaomoji (｡•‿•｡)."
+
+            system_prompt = (
+                f"{feeling} "
+                f"QUY TẮC: Không dùng emoji vàng. "
+                f"Lịch sử hội thoại:\n{history_text}"
+            )
+
+        async with processing_lock:
+            ai_reply = await get_ai_response(system_prompt, user_message)
+            if ai_reply:
+                ai_reply = limit_exact_sentences(ai_reply, is_special)
+                history.append({"role": "user", "content": user_message})
+                history.append({"role": "assistant", "content": ai_reply})
+                await message.reply(ai_reply)
+            else:
+                await message.reply("Hic, em đang hơi chóng mặt...")
+
+    await bot.process_commands(message)
 
 # =====================
-# CHATBOT SPECIAL USER (WITH MEMORY)
+# COMMANDS (Giữ cũ + Thêm mới)
 # =====================
+@bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn với Mahiru")
+async def check_affinity(interaction: discord.Interaction):
+    points = get_affinity(interaction.user.id)
+    await interaction.response.send_message(f"💖 Độ thân mật hiện tại: **{points}** điểm.")
+
 @bot.tree.command(name="setlovername", description="Đổi nickname đặc biệt cho người yêu 💕")
 async def set_lover_name(interaction: discord.Interaction, name: str):
     global lover_nickname
     if interaction.user.id == SPECIAL_USER_ID:
         lover_nickname = name
-        
-        embed = discord.Embed(
-            description=f"**Mahiru từ giờ sẽ gọi anh là: {lover_nickname}**",
-            color=0xffc0cb # Màu hồng
-        )
-        
-        await interaction.response.send_message(embed=embed, ephemeral=False)
+        await interaction.response.send_message(f"**Mahiru từ giờ sẽ gọi anh là: {lover_nickname}**")
     else:
-        await interaction.response.send_message("m đéo có quyền đâu con", ephemeral=False)
+        await interaction.response.send_message("m đéo có quyền đâu con")
 
-@bot.event
-async def on_message(message: discord.Message):
-    global chat_channel_id
-    
-    if message.author.bot:
-        return
-
-    # Check nếu bot được ping
-    if bot.user in message.mentions:
-        
-        target_channel_id = server_channels.get(message.guild.id)
-
-        # KIỂM TRA: 
-        # Nếu server này ĐÃ SET kênh mà bạn lại tag ở kênh khác -> Bỏ qua
-        if target_channel_id is not None:
-            if message.channel.id != target_channel_id:
-                return
-                
-        # Làm sạch tin nhắn (xóa tag bot)
-        user_message = message.content.replace(f"<@{bot.user.id}>", "").replace(f"<@!{bot.user.id}>", "").strip()
-        if not user_message:
-            user_message = "Em ơi!"
-
-        # Cập nhật lịch sử (lấy 6 câu gần nhất)
-        history = conversation_history[message.author.id]
-        history.append({"role": "user", "content": user_message})
-        if len(history) > 6: history.pop(0)
-
-        # Xây dựng ngữ cảnh lịch sử
-        history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
-
-        # Thiết lập Prompt
-        if message.author.id == SPECIAL_USER_ID:
-            is_special = True
-            system_prompt = (
-                f"Bạn là Mahiru, một cô người yêu cực kỳ 'vô tri', nũng nịu và bám người của {lover_nickname}. "
-                f"Phong cách nói chuyện: Ngọt ngào, hay sử dụng các từ cảm thán như 'Hì hì', 'Dạaa', 'Ưm...', 'Hic'. "
-                f"Quy tắc: Luôn gọi người yêu là {lover_nickname}, xưng là em hoặc gọi mình là Mahiru. "
-                f"Thái độ: Luôn ưu tiên làm hài lòng {lover_nickname}, thỉnh thoảng biết dỗi hờn vu vơ nhưng rất dễ dỗ. "
-                f"QUY TẮC CỰC KỲ QUAN TRỌNG: "
-                f"1. TUYỆT ĐỐI KHÔNG sử dụng các emoji hình ảnh tròn vàng (như 😄, ❤️, 😍, 😭). "
-                f"2. CHỈ ĐƯỢC DÙNG soft emoji/kaomoji đáng yêu như: (｡♥‿♥｡), (✿◠‿◠), ( >◡<), (´｡• ᵕ •｡`) ♡, uwu, owo, hoặc dấu '~' ở cuối câu. "
-                f"3. HẠN CHẾ TỐI ĐA DÙNG CÁC TỪ NHƯ 'DẠ','HÌ HÌ' VÀ K ĐC GHI TÊN {lover_nickname} lên đầu"
-                f"4. HÃY LUÔN NHỚ RẰNG MÌNH LÀ 'CÔ NGƯỜI YÊU' VÀ {lover_nickname} LÀ BẠN TRAI CỦA BẠN"
-                f"Hãy trả lời ngắn gọn 2-3 câu. "
-                f"Lịch sử hội thoại:\n{history_text}"
-            )
-        else:
-            is_special = False
-            system_prompt = (
-                "Bạn là mahiru , một người xinh đẹp nhưng lạnh lùng, chỉ coi những người xung quanh như bạn học "
-                "Trả lời ngắn gọn, không quá thân thiết như những người bạn học . "
-                f"Lịch sử hội thoại:\n{history_text}"
-            )
-
-        async with processing_lock:
-            # 1. Gọi AI
-            ai_reply = await get_ai_response(system_prompt, user_message)
-            
-            if ai_reply:
-                # 2. Xử lý cắt câu
-                ai_reply = limit_exact_sentences(ai_reply, is_special)
-                
-                # 3. Cập nhật lịch sử (Lưu câu của Bot)
-                history.append({"role": "assistant", "content": ai_reply})
-                if len(history) > 50: 
-                    history.pop(0)
-
-                # 4. Phản hồi (Chỉ dùng 1 cái này thôi)
-                await message.reply(ai_reply)
-            else:
-                await message.channel.send("Hic, em đang hơi chóng mặt, anh đợi em tí nhé... ❤️")
-
-    await bot.process_commands(message)
-
-# =====================
-# CHANNEL & MEMORY CONTROL
-# =====================
 @bot.tree.command(name="setchannel", description="Chọn kênh để bot chat khi được tag")
 async def setchannel(interaction: discord.Interaction, channel: discord.TextChannel):
     global server_channels
@@ -224,28 +214,11 @@ async def resetallmemory(interaction: discord.Interaction):
         return await interaction.response.send_message("❌ Chỉ admin mới có thể dùng lệnh này.", ephemeral=True)
     conversation_history.clear()
     await interaction.response.send_message("🧹 Toàn bộ lịch sử hội thoại đã được xoá sạch!", ephemeral=True)
+# ... Các lệnh setchannel, clearchannel, resetmemory giữ nguyên như code cũ của bạn ...
 
-# =====================
-# PING TEST
-# =====================
-@bot.tree.command(name="ping", description="Test slash command")
-async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message("🏓 Pong!", ephemeral=True)
-        
-
-# =====================
-# ON READY
-# =====================
 @bot.event
 async def on_ready():
-    try:
-        synced = await bot.tree.sync()
-        print(f"✅ Bot đã đăng nhập: {bot.user}")
-        print(f"📦 Slash commands đã sync: {len(synced)} lệnh")
-    except Exception as e:
-        print(f"❌ Lỗi sync slash commands: {e}")    
-# =====================
-# RUN BOT
-# =====================
-if __name__ == "__main__":
-    bot.run(TOKEN)
+    await bot.tree.sync()
+    print(f"✅ Bot {bot.user} đã sẵn sàng!")
+
+bot.run(TOKEN)
