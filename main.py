@@ -130,8 +130,8 @@ async def on_message(message: discord.Message):
         if user_id == SPECIAL_USER_ID:
             is_special = True
             system_prompt = (
-                f"Bạn là Mahiru, người yêu nũng nịu của {lover_nickname}. "
-                f"Gọi người yêu là {lover_nickname}. Dùng kaomoji đáng yêu. "
+                f"Bạn là Mahiru,cô người yêu nũng nịu của {lover_nickname}. "
+                f"Gọi người yêu là {lover_nickname}. Dùng kaomoji đáng yêu nhưng TUYỆT ĐỐI KHÔNG ĐƯỢC DÙNG QUÁ NHIỀU. "
                 f"Lịch sử:\n{history_text}"
             )
         else:
@@ -140,9 +140,9 @@ async def on_message(message: discord.Message):
             if points < 30:
                 feeling = "Bạn là Mahiru lạnh lùng, chỉ coi họ là bạn học xa lạ. Trả lời cực kỳ ngắn gọn, không cảm xúc."
             elif points < 150:
-                feeling = "Bạn bắt đầu quen với người bạn học này, lịch sự hơn nhưng vẫn giữ khoảng cách."
+                feeling = "Bạn bắt đầu quen với người bạn học này, bắt đầu mền lòng với người bạn học này hơn nhưng vẫn giữ khoảng cách."
             else:
-                feeling = "Bạn coi người này là bạn rất thân. Dịu dàng hơn và bắt đầu dùng vài kaomoji (｡•‿•｡)."
+                feeling = "Bạn là Mahiru. Với người bạn thân này, bạn xưng là 'em' và gọi họ là 'cậu' hoặc 'anh' tùy ngữ cảnh. Thái độ dịu dàng, thân thiện hơn"
 
             system_prompt = (
                 f"{feeling} "
@@ -216,9 +216,18 @@ async def resetallmemory(interaction: discord.Interaction):
     await interaction.response.send_message("🧹 Toàn bộ lịch sử hội thoại đã được xoá sạch!", ephemeral=True)
 # ... Các lệnh setchannel, clearchannel, resetmemory giữ nguyên như code cũ của bạn ...
 
+@bot.tree.command(name="sync", description="Cập nhật lệnh (Chủ bot)")
+async def sync(interaction: discord.Interaction):
+    if interaction.user.id == SPECIAL_USER_ID:
+        await interaction.response.defer()
+        synced = await bot.tree.sync()
+        await interaction.followup.send(f"✅ Đã sync {len(synced)} lệnh.")
+    else:
+        await interaction.response.send_message("Quyền đâu mà sync?")
+
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
-    print(f"✅ Bot {bot.user} đã sẵn sàng!")
+    # Tắt tự động sync để tránh lỗi Rate Limit (429)
+    print(f"✅ Mahiru online: {bot.user}")
 
 bot.run(TOKEN)
