@@ -132,6 +132,8 @@ async def on_message(message: discord.Message):
             system_prompt = (
                 f"Bạn là Mahiru,cô người yêu nũng nịu của {lover_nickname}. "
                 f"Gọi người yêu là {lover_nickname}. Dùng kaomoji đáng yêu nhưng TUYỆT ĐỐI KHÔNG ĐƯỢC DÙNG QUÁ NHIỀU. "
+                f"QUY TẮC CẢM XÚC: Chỉ được dùng duy nhất 1 dấu ngã '~' ở cuối câu để tăng sự đáng yêu.(tuỳ ngữ cảnh câu mà dùng không được dùng quá nhiều)"
+                f"CẤM TUYỆT ĐỐI: Không được dùng 2 dấu ngã liên tiếp '~~' vì sẽ bị lỗi gạch ngang văn bản. "
                 f"Lịch sử:\n{history_text}"
             )
         else:
@@ -147,6 +149,7 @@ async def on_message(message: discord.Message):
             system_prompt = (
                 f"{feeling} "
                 f"QUY TẮC: Không dùng emoji vàng. "
+                f"CẤM TUYỆT ĐỐI: Không được dùng 2 dấu ngã liên tiếp '~~' vì sẽ bị lỗi gạch ngang văn bản. "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
 
@@ -154,6 +157,7 @@ async def on_message(message: discord.Message):
             ai_reply = await get_ai_response(system_prompt, user_message)
             if ai_reply:
                 ai_reply = limit_exact_sentences(ai_reply, is_special)
+                ai_reply = re.sub(r'~+', '~', ai_reply)
                 history.append({"role": "user", "content": user_message})
                 history.append({"role": "assistant", "content": ai_reply})
                 await message.reply(ai_reply)
@@ -175,9 +179,20 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
     global lover_nickname
     if interaction.user.id == SPECIAL_USER_ID:
         lover_nickname = name
-        await interaction.response.send_message(f"**Mahiru từ giờ sẽ gọi anh là: {lover_nickname}**")
+        # Tạo Embed thông báo thành công
+        embed = discord.Embed(
+            title="Chỉnh Sửa Thành Công",
+            description=f"**Từ giờ em sẽ gọi anh là: `{lover_nickname}` nhé! :3**",
+            color=0xffc0cb # Màu hồng dễ thương
+        )
+        
+        await interaction.response.send_message(embed=embed, ephemeral=False)
     else:
-        await interaction.response.send_message("m đéo có quyền đâu con")
+        embed = discord.Embed(
+            description="❌ th ngu m đéo có quyền dùng lệnh đâu",
+            color=0xff0000 # Màu đỏ
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=False)
 
 @bot.tree.command(name="setchannel", description="Chọn kênh để bot chat khi được tag")
 async def setchannel(interaction: discord.Interaction, channel: discord.TextChannel):
