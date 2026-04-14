@@ -223,10 +223,15 @@ async def resetmemory(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("❌ Bạn chưa có lịch sử hội thoại nào để xoá.", ephemeral=True)
 
-@bot.tree.command(name="resetallmemory", description="Xoá toàn bộ lịch sử hội thoại (admin)")
+@bot.tree.command(name="resetallmemory", description="Xoá toàn bộ lịch sử hội thoại (owner only)")
 async def resetallmemory(interaction: discord.Interaction):
-    if not interaction.user.guild_permissions.administrator:
-        return await interaction.response.send_message("❌ Chỉ admin mới có thể dùng lệnh này.", ephemeral=True)
+    # Thay đổi điều kiện: Chỉ cho phép người có ID là SPECIAL_USER_ID
+    if interaction.user.id != SPECIAL_USER_ID:
+        return await interaction.response.send_message(
+            "❌ chỉ owner ms được dùng thôi bn hiền", 
+            ephemeral=True
+        )
+    
     conversation_history.clear()
     await interaction.response.send_message("🧹 Toàn bộ lịch sử hội thoại đã được xoá sạch!", ephemeral=True)
 # ... Các lệnh setchannel, clearchannel, resetmemory giữ nguyên như code cũ của bạn ...
