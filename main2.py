@@ -179,6 +179,41 @@ async def set_lover_name(interaction: discord.Interaction, name: str):
     else:
         await interaction.response.send_message("m đéo có quyền đâu con")
 
+@bot.tree.command(name="setchannel", description="Chọn kênh để bot chat khi được tag")
+async def setchannel(interaction: discord.Interaction, channel: discord.TextChannel):
+    global server_channels
+    if not interaction.user.guild_permissions.manage_guild:
+        return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=False)
+    
+    # Lưu ID kênh cho server hiện tại
+    server_channels[interaction.guild.id] = channel.id
+    
+    await interaction.response.send_message(f"✅ em sẽ chỉ chat trong kênh: {channel.mention} :3")
+    
+@bot.tree.command(name="clearchannel", description="Cho phép bot chat mọi kênh ở server này")
+async def clearchannel(interaction: discord.Interaction):
+    global server_channels
+    if interaction.guild_id in server_channels:
+        del server_channels[interaction.guild_id]
+        await interaction.response.send_message(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
+    else:
+        await interaction.response.send_message("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
+
+@bot.tree.command(name="resetmemory", description="Xoá lịch sử hội thoại của bạn với bot")
+async def resetmemory(interaction: discord.Interaction):
+    user_id = interaction.user.id
+    if user_id in conversation_history:
+        conversation_history[user_id].clear()
+        await interaction.response.send_message("🧹 Lịch sử hội thoại của bạn đã được xoá sạch!", ephemeral=True)
+    else:
+        await interaction.response.send_message("❌ Bạn chưa có lịch sử hội thoại nào để xoá.", ephemeral=True)
+
+@bot.tree.command(name="resetallmemory", description="Xoá toàn bộ lịch sử hội thoại (admin)")
+async def resetallmemory(interaction: discord.Interaction):
+    if not interaction.user.guild_permissions.administrator:
+        return await interaction.response.send_message("❌ Chỉ admin mới có thể dùng lệnh này.", ephemeral=True)
+    conversation_history.clear()
+    await interaction.response.send_message("🧹 Toàn bộ lịch sử hội thoại đã được xoá sạch!", ephemeral=True)
 # ... Các lệnh setchannel, clearchannel, resetmemory giữ nguyên như code cũ của bạn ...
 
 @bot.event
