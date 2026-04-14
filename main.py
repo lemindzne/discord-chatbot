@@ -52,6 +52,15 @@ def add_affinity(user_id, amount=1):
     conn.commit()
     conn.close()
 
+def get_leaderboard(limit=10):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # Lấy top người dùng có điểm cao nhất
+    c.execute("SELECT user_id, points FROM affinity ORDER BY points DESC LIMIT ?", (limit,))
+    result = c.fetchall()
+    conn.close()
+    return result
+    
 # Khởi tạo database ngay khi chạy bot
 init_db()
 
@@ -244,6 +253,34 @@ async def sync(interaction: discord.Interaction):
         await interaction.followup.send(f"✅ Đã sync {len(synced)} lệnh.")
     else:
         await interaction.response.send_message("Quyền đâu mà sync?")
+
+@bot.tree.command(name="leaderboard", description="Xem ai là người thân thiết với Mahiru nhất")
+async def leaderboard(interaction: discord.Interaction):
+    top_users = get_leaderboard(10)
+    
+    if not top_users:
+        return await interaction.response.send_message("Hic, hình như chưa có ai thân với em cả...", ephemeral=True)
+
+    embed = discord.Embed(
+        title="🏆 BẢNG XẾP HẠNG THÂN MẬT 🏆",
+        description="top điểm thân mật vs mahiru nè :3",
+        color=0xffc0cb
+    )
+
+    leaderboard_text = ""
+    for index, (user_id, points) in enumerate(top_users, start=1):
+        # Thử tìm user trong server để lấy tên
+        user = bot.get_user(user_id)
+        name = f"**{user.name}**" if user else f"Người dùng ẩn danh (`{user_id}`)"
+        
+        # Icon cho top 3
+        medal = "🥇" if index == 1 else "🥈" if index == 2 else "🥉" if index == 3 else f"**#{index}**"
+        leaderboard_text += f"{medal} {name} — `{points} điểm` \n"
+
+    embed.add_field(name="Top 10 thành viên", value=leaderboard_text, inline=False)
+    embed.set_footer(text=f"Yêu cầu bởi {interaction.user.display_name}", icon_url=interaction.user.display_avatar.url)
+    
+    await interaction.response.send_message(embed=embed)
 
 @bot.command()
 async def force_sync(ctx):
