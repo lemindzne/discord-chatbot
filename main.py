@@ -199,7 +199,7 @@ async def help_command(interaction: discord.Interaction):
 
     # Danh sách lệnh cho người dùng
     embed.add_field(
-        name="📜 command ,
+        name="📜 command ",
         value=(
             "`/check_affinity`: check độ thân mật hiện tại\n"
             "`/leaderboard`: bảng xếp hạng điểm thân mật\n"
