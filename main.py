@@ -245,10 +245,16 @@ async def sync(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("Quyền đâu mà sync?")
 
+@bot.command()
+async def force_sync(ctx):
+    if ctx.author.id == SPECIAL_USER_ID:
+        await bot.tree.sync()
+        await ctx.send("✅ Đã ép buộc đồng bộ lệnh Slash!")
+
 @bot.event
 async def on_ready():
     # Tắt tự động sync để tránh lỗi Rate Limit (429)
     await bot.tree.sync()
     print(f"✅ Mahiru online: {bot.user}")
-
+    
 bot.run(TOKEN)
