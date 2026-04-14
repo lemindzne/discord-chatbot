@@ -178,6 +178,55 @@ async def on_message(message: discord.Message):
 # =====================
 # COMMANDS (Giữ cũ + Thêm mới)
 # =====================
+@bot.tree.command(name="help", description="có thêm thông tin cơ bản về bot")
+async def help_command(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="Tổng Quan Về Mahiru-chan 🌸",
+        color=0xffc0cb
+    )
+
+    # Giải thích cơ chế độ thân mật
+    embed.add_field(
+        name="💖 Độ thân mật (Affinity)",
+        value=(
+            "Mỗi khi bạn tag và trò chuyện, bạn sẽ nhận điểm thân mật.\n"
+            "• **Dưới 30 điểm:** mahiru sẽ hơi lạnh lùng vì chúng mình còn lạ lẫm.\n"
+            "• **Từ 30 - 150 điểm:** mahiru bắt đầu quen dần và nói chuyện dễ gần hơn.\n"
+            "• **Trên 150 điểm:** mahiru sẽ bắt đầu coi bạn là bạn thân, tính cách sẽ dễ gần hơn chút\n"
+        ),
+        inline=False
+    )
+
+    # Danh sách lệnh cho người dùng
+    embed.add_field(
+        name="📜 command ,
+        value=(
+            "`/check_affinity`: check độ thân mật hiện tại\n"
+            "`/leaderboard`: bảng xếp hạng điểm thân mật\n"
+            "`/resetmemory`: reset cuộc trò chuyện gần nhất của mahiru"
+        ),
+        inline=True
+    )
+
+    # Danh sách lệnh quản trị
+    embed.add_field(
+        name="⚙️ Owner & Administrator only",
+        value=(
+            "`/setchannel`: Cố định nơi em sẽ xuất hiện.\n"
+            "`/setlovername`: (Owner) Đổi nickname em gọi anh.\n"
+            "`/resetallmemory`: (Owner) Xóa sạch ký ức của em.\n"
+            "`/sync`: (Owner) Cập nhật hệ thống của em."
+        ),
+        inline=True
+    )
+
+    embed.set_footer(text="tag hoặc reply để trò chuyện với bot ")
+    
+    if bot.user.avatar:
+        embed.set_thumbnail(url=bot.user.avatar.url)
+
+    await interaction.response.send_message(embed=embed)
+    
 @bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn với Mahiru")
 async def check_affinity(interaction: discord.Interaction):
     points = get_affinity(interaction.user.id)
