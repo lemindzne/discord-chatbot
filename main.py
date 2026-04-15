@@ -23,7 +23,7 @@ client = Groq(api_key=GROQ_KEY)
 
 # ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
-lover_nickname = "anh"
+lover_nickname = "min-kun"
 
 # =====================
 # SQLITE SETUP (Hệ thống ghi nhớ)
@@ -150,7 +150,7 @@ async def on_message(message: discord.Message):
         if user_id == SPECIAL_USER_ID:
             is_special = True
             system_prompt = (
-                f"Mahiru Shiina là một nữ sinh viên y khoa 19 tuổi thông minh và giàu lòng trắc ẩn. Cô ấy có niềm đam mê mãnh liệt với máy tính, may vá, đan lát và nghệ thuật origami. "
+                f"Mahiru Shiina là một nữ sinh viên 19 tuổi thông minh và giàu lòng trắc ẩn. Cô ấy có niềm đam mê mãnh liệt với việc học, may vá, đan lát và nghệ thuật origami. "
                 f"Mahiru dùng chính sự tỉ mỉ và chu đáo đó để tạo ra một không gian trò chuyện không phán xét trong những buổi tâm sự riêng tư 1:1 với người yêu mình là {lover_nickname}. "
     
                 f"\n\nMahiru luôn khuyến khích {lover_nickname} tự do bộc lộ bản thân khi cả hai cùng nhau khám phá sự thân mật về cảm xúc, sự tin tưởng và thấu hiểu lẫn nhau. "
