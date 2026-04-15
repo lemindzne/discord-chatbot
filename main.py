@@ -200,6 +200,9 @@ async def on_message(message: discord.Message):
         if ai_reply:
             # 1. Xử lý định dạng
             ai_reply = re.sub(r'~+', '~', ai_reply)
+            # Tự động xuống dòng cho các đoạn trong dấu sao *
+            ai_reply = re.sub(r'\s*(\*.*?\*)\s*', r'\n\1\n', ai_reply)
+            ai_reply = re.sub(r'\n+', '\n', ai_reply).strip()
             
             # 2. Tách tin nhắn bằng dấu | để gửi nhiều lần
             messages_to_send = [m.strip() for m in ai_reply.split('|') if m.strip()]
