@@ -340,7 +340,7 @@ async def sync(interaction: discord.Interaction):
         await interaction.response.send_message("Quyền đâu mà sync?")
 
 
-    @bot.tree.command(name="leaderboard", description="Xem top 10 xp trong server")
+@bot.tree.command(name="leaderboard", description="Xem top 10 xp trong server")
 async def leaderboard(interaction: discord.Interaction):
     # Truyền guild ID vào hàm lấy top
     top_users = get_leaderboard(interaction.guild.id, 10)
