@@ -31,32 +31,34 @@ lover_nickname = "anh"
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    # Thêm guild_id vào khóa chính để phân biệt người dùng giữa các server
     c.execute('''CREATE TABLE IF NOT EXISTS affinity 
-                 (user_id INTEGER PRIMARY KEY, points INTEGER DEFAULT 0)''')
+                 (user_id INTEGER, guild_id INTEGER, points INTEGER DEFAULT 0,
+                  PRIMARY KEY (user_id, guild_id))''')
     conn.commit()
     conn.close()
 
-def get_affinity(user_id):
+def get_affinity(user_id, guild_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT points FROM affinity WHERE user_id = ?", (user_id,))
+    c.execute("SELECT points FROM affinity WHERE user_id = ? AND guild_id = ?", (user_id, guild_id))
     result = c.fetchone()
     conn.close()
     return result[0] if result else 0
-
-def add_affinity(user_id, amount=1):
+    
+def add_affinity(user_id, guild_id, amount=1):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("INSERT OR IGNORE INTO affinity (user_id, points) VALUES (?, 0)", (user_id,))
-    c.execute("UPDATE affinity SET points = points + ? WHERE user_id = ?", (amount, user_id))
+    c.execute("INSERT OR IGNORE INTO affinity (user_id, guild_id, points) VALUES (?, ?, 0)", (user_id, guild_id))
+    c.execute("UPDATE affinity SET points = points + ? WHERE user_id = ? AND guild_id = ?", (amount, user_id, guild_id))
     conn.commit()
     conn.close()
-
-def get_leaderboard(limit=10):
+    
+def get_leaderboard(guild_id, limit=10):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # Lấy top người dùng có điểm cao nhất
-    c.execute("SELECT user_id, points FROM affinity ORDER BY points DESC LIMIT ?", (limit,))
+    # Chỉ lấy top 10 của server (guild) hiện tại
+    c.execute("SELECT user_id, points FROM affinity WHERE guild_id = ? ORDER BY points DESC LIMIT ?", (guild_id, limit))
     result = c.fetchall()
     conn.close()
     return result
@@ -126,8 +128,8 @@ async def on_message(message: discord.Message):
             return
 
         # 2. Xử lý độ thân mật
-        add_affinity(user_id, 1) # Mỗi lần tag bot là +1 điểm
-        points = get_affinity(user_id)
+        add_affinity(user_id, message.guild.id, 1) 
+        points = get_affinity(user_id, message.guild.id)
 
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not user_message: user_message = "Em ơi!"
@@ -230,10 +232,41 @@ async def help_command(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed)
     
-@bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn với Mahiru")
+@bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn tại server này")
 async def check_affinity(interaction: discord.Interaction):
-    points = get_affinity(interaction.user.id)
-    await interaction.response.send_message(f"💖 Độ thân mật hiện tại: **{points}** điểm.")
+    # Lấy điểm dựa trên user và server hiện tại
+    points = get_affinity(interaction.user.id, interaction.guild.id)
+    
+    # Xác định danh hiệu dựa trên số điểm
+    if points < 30:
+        rank = "Người lạ từng quen ❄️"
+        color = 0x95a5a6 # Màu xám
+    elif points < 150:
+        rank = "Bạn học cùng lớp 📚"
+        color = 0x3498db # Màu xanh dương
+    else:
+        rank = "Bạn cực kỳ thân thiết 💖"
+        color = 0xffc0cb # Màu hồng
+
+    embed = discord.Embed(
+        title="💓 Mức Độ Thân Mật 💓",
+        description=f"Giữa **{interaction.user.display_name}** và **Mahiru**",
+        color=color
+    )
+    
+    embed.add_field(name="Điểm thân mật", value=f"**{points}** điểm", inline=True)
+    embed.add_field(name="Trạng thái", value=rank, inline=True)
+    
+    # Thêm thanh tiến trình nhỏ cho sinh động
+    progress = min(points // 20, 10)
+    bar = "💖" * progress + "🖤" * (10 - progress)
+    embed.add_field(name="Tiến trình", value=bar, inline=False)
+
+    embed.set_thumbnail(url=interaction.user.display_avatar.url)
+    embed.set_footer(text="Càng trò chuyện nhiều, tụi mình càng thân nhau hơn đó~")
+
+    await interaction.response.send_message(embed=embed)
+    
 
 @bot.tree.command(name="setlovername", description="Đổi nickname đặc biệt cho người yêu 💕")
 async def set_lover_name(interaction: discord.Interaction, name: str):
@@ -306,34 +339,45 @@ async def sync(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("Quyền đâu mà sync?")
 
-@bot.tree.command(name="leaderboard", description="Xem ai là người thân thiết với Mahiru nhất")
+
+    @bot.tree.command(name="leaderboard", description="Xem top 10 xp trong server")
 async def leaderboard(interaction: discord.Interaction):
-    top_users = get_leaderboard(10)
+    # Truyền guild ID vào hàm lấy top
+    top_users = get_leaderboard(interaction.guild.id, 10)
     
     if not top_users:
-        return await interaction.response.send_message("Hic, hình như chưa có ai thân với em cả...", ephemeral=True)
+        return await interaction.response.send_message("Server này chưa ai làm quen với em cả... :<", ephemeral=True)
 
     embed = discord.Embed(
-        title="🏆 BẢNG XẾP HẠNG THÂN MẬT 🏆",
-        description="top điểm thân mật vs mahiru nè :3",
+        title=f"🏆 BẢNG XẾP HẠNG THÂN MẬT - {interaction.guild.name} 🏆",
         color=0xffc0cb
     )
 
     leaderboard_text = ""
     for index, (user_id, points) in enumerate(top_users, start=1):
-        # Thử tìm user trong server để lấy tên
         user = bot.get_user(user_id)
-        name = f"**{user.name}**" if user else f"Người dùng ẩn danh (`{user_id}`)"
+        name = f"**{user.name}**" if user else f"Thành viên ẩn danh (`{user_id}`)"
         
-        # Icon cho top 3
         medal = "🥇" if index == 1 else "🥈" if index == 2 else "🥉" if index == 3 else f"**#{index}**"
         leaderboard_text += f"{medal} {name} — `{points} điểm` \n"
 
-    embed.add_field(name="Top 10 thành viên", value=leaderboard_text, inline=False)
-    embed.set_footer(text=f"Yêu cầu bởi {interaction.user.display_name}", icon_url=interaction.user.display_avatar.url)
-    
+    embed.add_field(name="Top điểm thân mật", value=leaderboard_text, inline=False)
     await interaction.response.send_message(embed=embed)
 
+@bot.tree.command(name="reset_db", description="Xóa sạch file database (owner only)")
+async def reset_db_hard(interaction: discord.Interaction):
+    if interaction.user.id == SPECIAL_USER_ID: # Kiểm tra đúng ID của bạn
+        if os.path.exists("mahiru.db"):
+            try:
+                os.remove("mahiru.db")
+                await interaction.response.send_message("✅ Đã xóa database. redeploy để tạo lại database")
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Lỗi khi xóa: {e}")
+        else:
+            await interaction.response.send_message("❌ Không tìm thấy file `mahiru.db`.")
+    else:
+        await interaction.response.send_message("❌ command này chỉ owner mới có thể dùng")
+        
 @bot.command()
 async def force_sync(ctx):
     if ctx.author.id == SPECIAL_USER_ID:
