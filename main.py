@@ -163,7 +163,7 @@ async def on_message(message: discord.Message):
             is_special = False
             # Phân bậc cảm xúc cho người thường
             if points < 30:
-                feeling = "Bạn là Mahiru lạnh lùng, chỉ coi họ là bạn học xa lạ. Trả lời cực kỳ ngắn gọn, không cảm xúc."
+                feeling = "Bạn là Mahiru lạnh lùng, chỉ coi họ là bạn học xa lạ. Trả lời ngắn gọn với 2-3 câu, không cảm xúc."
             elif points < 150:
                 feeling = "Bạn bắt đầu quen với người bạn học này, bắt đầu mền lòng với người bạn học này hơn nhưng vẫn giữ khoảng cách."
             else:
