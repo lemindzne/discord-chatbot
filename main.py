@@ -373,19 +373,25 @@ async def leaderboard(interaction: discord.Interaction):
     embed.add_field(name="Top điểm thân mật", value=leaderboard_text, inline=False)
     await interaction.response.send_message(embed=embed)
 
-@bot.tree.command(name="reset_db", description="Xóa sạch file database (owner only)")
-async def reset_db_hard(interaction: discord.Interaction):
-    if interaction.user.id == SPECIAL_USER_ID: # Kiểm tra đúng ID của bạn
-        if os.path.exists("mahiru.db"):
-            try:
-                os.remove("mahiru.db")
-                await interaction.response.send_message("✅ Đã xóa database. redeploy để tạo lại database", ephemeral=True)
-            except Exception as e:
-                await interaction.response.send_message(f"❌ Lỗi khi xóa: {e}", ephemeral=True)
-        else:
-            await interaction.response.send_message("❌ Không tìm thấy file database", ephemeral=True)
+@bot.tree.command(name="clear_database_data", description="Xóa sạch toàn bộ database (Owner Only)")
+async def clear_database_data(interaction: discord.Interaction):
+    if interaction.user.id == SPECIAL_USER_ID:
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            # Xóa sạch dữ liệu trong bảng affinity
+            c.execute("DELETE FROM affinity")
+            conn.commit()
+            conn.close()
+            
+            # Xóa lịch sử chat trong bộ nhớ tạm
+            conversation_history.clear()
+            
+            await interaction.response.send_message("✅ Đã xóa sạch toàn bộ điểm số và lịch sử chat rồi ạ~", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Lỗi rồi anh ơi: {e}", ephemeral=True)
     else:
-        await interaction.response.send_message("❌ command này chỉ owner mới có thể dùng", ephemeral=False)
+        await interaction.response.send_message("❌ You have no perm son ", ephemeral=False)
 
 @bot.tree.command(name="get_db", description="Gửi file database về máy (owner only)")
 async def get_db(interaction: discord.Interaction):
