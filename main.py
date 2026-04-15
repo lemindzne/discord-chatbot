@@ -31,11 +31,20 @@ lover_nickname = "anh"
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # Thêm guild_id vào khóa chính để phân biệt người dùng giữa các server
+    # Tạo bảng nếu chưa có
     c.execute('''CREATE TABLE IF NOT EXISTS affinity 
                  (user_id INTEGER, guild_id INTEGER, points INTEGER DEFAULT 0,
                   PRIMARY KEY (user_id, guild_id))''')
-    conn.commit()
+    
+    # KIỂM TRA VÀ NÂNG CẤP CỘT (Fix lỗi no such column)
+    try:
+        c.execute("SELECT guild_id FROM affinity LIMIT 1")
+    except sqlite3.OperationalError:
+        # Nếu lỗi nghĩa là chưa có cột guild_id, tiến hành thêm vào
+        print("Đang nâng cấp database: Thêm cột guild_id...")
+        c.execute("ALTER TABLE affinity ADD COLUMN guild_id INTEGER DEFAULT 0")
+        conn.commit()
+    
     conn.close()
 
 def get_affinity(user_id, guild_id):
