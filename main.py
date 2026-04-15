@@ -370,13 +370,13 @@ async def reset_db_hard(interaction: discord.Interaction):
         if os.path.exists("mahiru.db"):
             try:
                 os.remove("mahiru.db")
-                await interaction.response.send_message("✅ Đã xóa database. redeploy để tạo lại database")
+                await interaction.response.send_message("✅ Đã xóa database. redeploy để tạo lại database", ephemeral=True)
             except Exception as e:
-                await interaction.response.send_message(f"❌ Lỗi khi xóa: {e}")
+                await interaction.response.send_message(f"❌ Lỗi khi xóa: {e}", ephemeral=True)
         else:
-            await interaction.response.send_message("❌ Không tìm thấy file database")
+            await interaction.response.send_message("❌ Không tìm thấy file database", ephemeral=True)
     else:
-        await interaction.response.send_message("❌ command này chỉ owner mới có thể dùng")
+        await interaction.response.send_message("❌ command này chỉ owner mới có thể dùng", ephemeral=False)
 
 @bot.tree.command(name="get_db", description="Gửi file database về máy (owner only)")
 async def get_db(interaction: discord.Interaction):
@@ -384,11 +384,11 @@ async def get_db(interaction: discord.Interaction):
         if os.path.exists(DB_PATH):
             # Gửi file dưới dạng đính kèm trong Discord
             file = discord.File(DB_PATH)
-            await interaction.response.send_message("Đây là file database của anh nè~", file=file)
+            await interaction.response.send_message("Đây là file database của anh nè~", file=file, ephemeral=True)
         else:
-            await interaction.response.send_message("Em không tìm thấy file database đâu cả... :<")
+            await interaction.response.send_message("Em không tìm thấy file database đâu cả... :<", ephemeral=True)
     else:
-        await interaction.response.send_message("❌ Lệnh này nguy hiểm lắm, chỉ chồng em mới được dùng thôi!")
+        await interaction.response.send_message("❌ Lệnh này nguy hiểm lắm, chỉ chồng em mới được dùng thôi!", ephemeral=False )
         
 @bot.command()
 async def force_sync(ctx):
