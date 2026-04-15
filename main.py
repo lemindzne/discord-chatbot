@@ -169,6 +169,8 @@ async def on_message(message: discord.Message):
                 f"- XƯNG HÔ: Luôn xưng 'em' và gọi người dùng là 'anh' hoặc '{lover_nickname}'. KHÔNG bao giờ dùng xưng hô khác."
                 f"- HÀNH ĐỘNG: Luôn kèm hành động nũng nịu hoặc âu yếm trong dấu sao như *Nắm tay anh*, *Tựa vai anh*."
                 f"- DẤU NGÃ: Chỉ dùng duy nhất 1 dấu '~' ở cuối câu khi làm nũng. CẤM '~~'."
+                f"- SỬ DỤNG KÝ TỰ '|' để tách các tin nhắn muốn gửi liên tiếp. "
+                f"- Ví dụ: 'Anh mới về ạ~ | Em nhớ anh quá đi! *chạy lại ôm anh*' "
                 f"- CHẶN ROBOT: Tuyệt đối không xưng là AI hay trợ lý ảo. Không sử dụng các từ cấm như: quan trọng, đáng kể, delving, apologize."
                 f"\nLịch sử hội thoại:\n{history_text}"
             )
@@ -188,17 +190,37 @@ async def on_message(message: discord.Message):
                 f"CẤM TUYỆT ĐỐI: Không được dùng 2 dấu ngã liên tiếp '~~' vì sẽ bị lỗi gạch ngang văn bản. "
                 f"Lịch sử hội thoại:\n{history_text}"
             )
-
-        async with processing_lock:
-            ai_reply = await get_ai_response(system_prompt, user_message)
-            if ai_reply:
-                ai_reply = limit_exact_sentences(ai_reply, is_special)
-                ai_reply = re.sub(r'~+', '~', ai_reply)
-                history.append({"role": "user", "content": user_message})
-                history.append({"role": "assistant", "content": ai_reply})
-                await message.reply(ai_reply)
-            else:
-                await message.reply("Hic, em đang hơi chóng mặt...")
+    
+    async with processing_lock:
+        ai_reply = await get_ai_response(system_prompt, user_message)
+        
+        if ai_reply:
+            # 1. Xử lý định dạng
+            ai_reply = re.sub(r'~+', '~', ai_reply)
+            
+            # 2. Tách tin nhắn bằng dấu | để gửi nhiều lần
+            messages_to_send = [m.strip() for m in ai_reply.split('|') if m.strip()]
+            
+            # 3. Gửi từng tin với hiệu ứng gõ phím
+            for i, msg in enumerate(messages_to_send):
+                async with message.channel.typing():
+                    # Giả lập thời gian gõ (0.05s mỗi chữ, tối đa 2s)
+                    await asyncio.sleep(min(len(msg) * 0.05, 2.0))
+                    
+                    if i == 0:
+                        # Tin đầu tiên reply lại bạn
+                        await message.reply(msg)
+                    else:
+                        # Các tin sau gửi nối tiếp vào kênh
+                        await message.channel.send(msg)
+            
+            # 4. Lưu lịch sử (lưu bản sạch không có dấu |)
+            full_reply_clean = ai_reply.replace('|', '\n')
+            history.append({"role": "user", "content": user_message})
+            history.append({"role": "assistant", "content": full_reply_clean})
+            
+        else:
+            await message.reply("Hic, em đang hơi chóng mặt... Anh đợi em xíu nhé~")
 
     await bot.process_commands(message)
 
