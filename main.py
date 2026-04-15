@@ -374,9 +374,21 @@ async def reset_db_hard(interaction: discord.Interaction):
             except Exception as e:
                 await interaction.response.send_message(f"❌ Lỗi khi xóa: {e}")
         else:
-            await interaction.response.send_message("❌ Không tìm thấy file `mahiru.db`.")
+            await interaction.response.send_message("❌ Không tìm thấy file database")
     else:
         await interaction.response.send_message("❌ command này chỉ owner mới có thể dùng")
+
+@bot.tree.command(name="get_db", description="Gửi file database về máy (owner only)")
+async def get_db(interaction: discord.Interaction):
+    if interaction.user.id == SPECIAL_USER_ID:
+        if os.path.exists(DB_PATH):
+            # Gửi file dưới dạng đính kèm trong Discord
+            file = discord.File(DB_PATH)
+            await interaction.response.send_message("Đây là file database của anh nè~", file=file)
+        else:
+            await interaction.response.send_message("Em không tìm thấy file database đâu cả... :<")
+    else:
+        await interaction.response.send_message("❌ Lệnh này nguy hiểm lắm, chỉ chồng em mới được dùng thôi!")
         
 @bot.command()
 async def force_sync(ctx):
