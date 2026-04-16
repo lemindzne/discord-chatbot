@@ -368,13 +368,7 @@ async def leaderboard(interaction: discord.Interaction):
 async def clear_database_data(interaction: discord.Interaction):
     if interaction.user.id == SPECIAL_USER_ID:
         try:
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            # Xóa sạch dữ liệu trong bảng affinity
-            c.execute("DELETE FROM affinity")
-            conn.commit()
-            conn.close()
-            
+            db.clear_all_data()
             # Xóa lịch sử chat trong bộ nhớ tạm
             conversation_history.clear()
             
