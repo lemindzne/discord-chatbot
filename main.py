@@ -162,7 +162,7 @@ async def on_message(message: discord.Message):
                 for i, msg in enumerate(messages_to_send):
                     async with message.channel.typing():
                     # Giả lập thời gian gõ: càng dài gõ càng lâu (0.06s/chữ), tối đa 2.5 giây
-                        await asyncio.sleep(min(len(msg) * 0.06, 2.5))
+                        await asyncio.sleep(min(len(msg) * 0.6, 3))
                     
                         if i == 0:
                         # Tin đầu tiên reply lại người dùng
