@@ -46,3 +46,5 @@ def get_leaderboard(guild_id, limit=10):
     result = c.fetchall()
     conn.close()
     return result
+
+init_db()
