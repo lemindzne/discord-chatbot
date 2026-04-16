@@ -157,13 +157,17 @@ async def help_command(interaction: discord.Interaction):
 
     # Giải thích cơ chế độ thân mật
     embed.add_field(
-        name="💖 Độ thân mật (Affinity)",
-        value=(
-            "Mỗi khi bạn tag và trò chuyện, bạn sẽ nhận điểm thân mật.\n"
-            "• **Dưới 30 điểm:** mahiru sẽ hơi lạnh lùng vì chúng mình còn lạ lẫm.\n"
-            "• **Từ 30 - 150 điểm:** mahiru bắt đầu quen dần và nói chuyện dễ gần hơn.\n"
-            "• **Trên 150 điểm:** mahiru sẽ bắt đầu coi bạn là bạn thân, tính cách sẽ dễ gần hơn chút\n"
-        ),
+        name="💖 Cơ chế Độ thân mật (Affinity)",
+    value=(
+        "Mỗi khi bạn tag và trò chuyện, bạn sẽ nhận được điểm thân mật.\n\n"
+        "• **Dưới 100:** Mahiru lạnh lùng, giữ khoảng cách tuyệt đối.\n"
+        "• **100 - 300:** Bắt đầu nhận diện bạn học, lịch sự xã giao.\n"
+        "• **300 - 600:** Người quen, bớt cảnh giác và dịu dàng hơn.\n"
+        "• **600 - 1000:** Bạn tốt, bắt đầu mở lòng và chia sẻ nhiều hơn.\n"
+        "• **1000 - 1500:** Bạn thân thiết, nũng nịu và quan tâm sâu sắc.\n"
+        "• **1500 - 2500:** Tình cảm bùng nổ, quấn quýt và ỷ lại vào bạn.\n"
+        "• **Trên 2500:** Tri kỷ trọn đời, mức độ thân mật cao nhất."
+    ),
         inline=False
     )
 
