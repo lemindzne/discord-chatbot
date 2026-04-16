@@ -387,9 +387,9 @@ async def clear_database_data(interaction: discord.Interaction):
 @bot.tree.command(name="get_db", description="Gửi file database về máy (owner only)")
 async def get_db(interaction: discord.Interaction):
     if interaction.user.id == SPECIAL_USER_ID:
-        if os.path.exists(DB_PATH):
+        if os.path.exists(db.DB_PATH):
             # Gửi file dưới dạng đính kèm trong Discord
-            file = discord.File(DB_PATH)
+            file = discord.File(db.DB_PATH)
             await interaction.response.send_message("Đây là file database của anh nè~", file=file, ephemeral=True)
         else:
             await interaction.response.send_message("Em không tìm thấy file database đâu cả... :<", ephemeral=True)
