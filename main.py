@@ -4,7 +4,7 @@ import random
 import re
 import asyncio
 import discord
-import sqlite3 # Thêm thư viện database
+import database as db
 from discord.ext import commands
 from discord import app_commands
 from groq import Groq
