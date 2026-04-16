@@ -197,7 +197,7 @@ async def help_command(interaction: discord.Interaction):
     embed.set_footer(text="tag hoặc reply để trò chuyện với bot ")
     
     if bot.user.avatar:
-        embed.set_thumbnail(url=bot.user.avatar.url)
+        embed.set_thumbnail(url="https://media4.giphy.com/media/v1.Y2lkPTZjMDliOTUyand2NWJ1eGp6OGY1dHR4N3NydHRqcTA4Mzk1cHM1cjl1NHNsM3ZrYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/x2aO0plLdV7wGNzQxt/giphy.gif")
 
     await interaction.response.send_message(embed=embed)
     
