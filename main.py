@@ -156,20 +156,17 @@ async def on_message(message: discord.Message):
             if ai_reply:
             # 1. Dọn dẹp định dạng (Chỉ giữ lại 1 dấu ngã, xóa các dấu xuống dòng thừa của AI)
                 ai_reply = re.sub(r'~+', '~', ai_reply)
-            
-            # 2. TÁCH TIN NHẮN: Ưu tiên tách theo dấu '|', nếu không có thì tách theo dòng mới
-            # Đồng thời tự động tách các đoạn hành động trong dấu sao (*) thành tin riêng
                 ai_reply = re.sub(r'(\*.*?\*)', r'|\1|', ai_reply)
-            
-            # Biến văn bản thành danh sách các tin nhắn lẻ
                 messages_to_send = [m.strip() for m in re.split(r'[|\n]', ai_reply) if m.strip()]
             
                 # 3. Gửi từng tin với hiệu ứng gõ phím riêng biệt
                 for i, msg in enumerate(messages_to_send):
                     async with message.channel.typing():
-                    # Giả lập thời gian gõ: càng dài gõ càng lâu (0.06s/chữ), tối đa 2.5 giây
-                        await asyncio.sleep(min(len(msg) * 0.6, 3))
-                    
+                        base_speed = len(msg) * random.uniform(0.05, 0.1)
+                        thinking_time = random.uniform(0.5, 1.5)
+                        total_sleep = min(base_speed + thinking_time, 4.0)
+                        await asyncio.sleep(total_sleep)
+                        
                         if i == 0:
                         # Tin đầu tiên reply lại người dùng
                             await message.reply(msg)
