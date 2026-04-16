@@ -148,27 +148,33 @@ async def on_message(message: discord.Message):
             ai_reply = await get_ai_response(system_prompt, user_message)
         
             if ai_reply:
-            # 1. Xử lý định dạng
+            # 1. Dọn dẹp định dạng (Chỉ giữ lại 1 dấu ngã, xóa các dấu xuống dòng thừa của AI)
                 ai_reply = re.sub(r'~+', '~', ai_reply)
-            # Tự động xuống dòng cho các đoạn trong dấu sao *
-                ai_reply = re.sub(r'\s*(\*.*?\*)\s*', r'\n\1\n', ai_reply)
-                ai_reply = re.sub(r'\n+', '\n', ai_reply).strip()
             
-            # 2. Tách tin nhắn bằng dấu | để gửi nhiều lần
-                messages_to_send = [m.strip() for m in ai_reply.split('|') if m.strip()]
+            # 2. TÁCH TIN NHẮN: Ưu tiên tách theo dấu '|', nếu không có thì tách theo dòng mới
+            # Đồng thời tự động tách các đoạn hành động trong dấu sao (*) thành tin riêng
+                ai_reply = re.sub(r'(\*.*?\*)', r'|\1|', ai_reply)
             
-            # 3. Gửi từng tin với hiệu ứng gõ phím
+            # Biến văn bản thành danh sách các tin nhắn lẻ
+                messages_to_send = [m.strip() for m in re.split(r'[|\n]', ai_reply) if m.strip()]
+            
+                # 3. Gửi từng tin với hiệu ứng gõ phím riêng biệt
                 for i, msg in enumerate(messages_to_send):
                     async with message.channel.typing():
-                    # Giả lập thời gian gõ (0.05s mỗi chữ, tối đa 2s)
-                        await asyncio.sleep(min(len(msg) * 0.05, 2.0))
+                    # Giả lập thời gian gõ: càng dài gõ càng lâu (0.06s/chữ), tối đa 2.5 giây
+                        await asyncio.sleep(min(len(msg) * 0.06, 2.5))
                     
                         if i == 0:
-                        # Tin đầu tiên reply lại bạn
+                        # Tin đầu tiên reply lại người dùng
                             await message.reply(msg)
                         else:
-                        # Các tin sau gửi nối tiếp vào kênh
+                        # Các tin sau gửi như tin nhắn mới trong kênh
                             await message.channel.send(msg)
+            
+            # 4. Lưu lịch sử (Lưu bản sạch không có ký hiệu phân tách)
+            full_reply_clean = " ".join(messages_to_send)
+            history.append({"role": "user", "content": user_message})
+            history.append({"role": "assistant", "content": full_reply_clean})
             
             # 4. Lưu lịch sử (lưu bản sạch không có dấu |)
                 full_reply_clean = ai_reply.replace('|', '\n')
