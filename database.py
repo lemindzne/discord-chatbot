@@ -47,4 +47,9 @@ def get_leaderboard(guild_id, limit=10):
     conn.close()
     return result
 
+def clear_all_data():
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("DELETE FROM affinity")
+        conn.commit()
+
 init_db()
