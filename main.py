@@ -197,39 +197,35 @@ async def help_command(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed)
     
-@bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn tại server này")
+@bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn")
 async def check_affinity(interaction: discord.Interaction):
-    # Lấy điểm dựa trên user và server hiện tại
     points = db.get_affinity(interaction.user.id, interaction.guild.id)
     
-    # Xác định danh hiệu dựa trên số điểm
-    if points < 30:
-        rank = "Người lạ từng quen ❄️"
-        color = 0x95a5a6 # Màu xám
-    elif points < 150:
-        rank = "Bạn học cùng lớp 📚"
-        color = 0x3498db # Màu xanh dương
+    # 7 mốc danh hiệu
+    if points < 100:
+        rank, color = "Người lạ từng quen ❄️", 0x95a5a6
+    elif points < 300:
+        rank, color = "Bạn cùng lớp 📚", 0x3498db
+    elif points < 600:
+        rank, color = "Người quen xã giao 🍃", 0x2ecc71
+    elif points < 1000:
+        rank, color = "Bạn tốt chân thành 🌤️", 0xf1c40f
+    elif points < 1500:
+        rank, color = "Bạn thân thiết 💖", 0xe91e63
+    elif points < 2500:
+        rank, color = "Người quan trọng nhất ✨", 0x9b59b6
     else:
-        rank = "Bạn cực kỳ thân thiết 💖"
-        color = 0xffc0cb # Màu hồng
+        rank, color = "Tri kỷ trọn đời 💍", 0xffc0cb
 
-    embed = discord.Embed(
-        title="💓 Mức Độ Thân Mật 💓",
-        description=f"Giữa **{interaction.user.display_name}** và **Mahiru**",
-        color=color
-    )
-    
-    embed.add_field(name="Điểm thân mật", value=f"**{points}** điểm", inline=True)
+    embed = discord.Embed(title="💓 Mức Độ Thân Mật 💓", color=color)
+    embed.add_field(name="Điểm thân mật", value=f"**{points}**", inline=True)
     embed.add_field(name="Trạng thái", value=rank, inline=True)
     
-    # Thêm thanh tiến trình nhỏ cho sinh động
-    progress = min(points // 20, 10)
+    # Thanh tiến trình: mỗi 250 điểm được 1 tim (đầy thanh ở 2500 điểm)
+    progress = min(points // 250, 10)
     bar = "💖" * progress + "🖤" * (10 - progress)
     embed.add_field(name="Tiến trình", value=bar, inline=False)
-
-    embed.set_thumbnail(url=interaction.user.display_avatar.url)
-    embed.set_footer(text="Càng trò chuyện nhiều, tụi mình càng thân nhau hơn đó~")
-
+    
     await interaction.response.send_message(embed=embed)
     
 
