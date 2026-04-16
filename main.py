@@ -235,7 +235,7 @@ async def help_command(interaction: discord.Interaction):
 @bot.tree.command(name="check_affinity", description="Xem độ thân mật của bạn tại server này")
 async def check_affinity(interaction: discord.Interaction):
     # Lấy điểm dựa trên user và server hiện tại
-    points = get_affinity(interaction.user.id, interaction.guild.id)
+    points = db.get_affinity(interaction.user.id, interaction.guild.id)
     
     # Xác định danh hiệu dựa trên số điểm
     if points < 30:
@@ -343,7 +343,7 @@ async def sync(interaction: discord.Interaction):
 @bot.tree.command(name="leaderboard", description="Xem top 10 xp trong server")
 async def leaderboard(interaction: discord.Interaction):
     # Truyền guild ID vào hàm lấy top
-    top_users = get_leaderboard(interaction.guild.id, 10)
+    top_users = db.get_leaderboard(interaction.guild.id, 10)
     
     if not top_users:
         return await interaction.response.send_message("Server này chưa ai làm quen với em cả... :<", ephemeral=True)
