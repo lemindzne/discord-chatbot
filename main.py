@@ -172,12 +172,7 @@ async def on_message(message: discord.Message):
                             await message.channel.send(msg)
             
             # 4. Lưu lịch sử (Lưu bản sạch không có ký hiệu phân tách)
-            full_reply_clean = " ".join(messages_to_send)
-            history.append({"role": "user", "content": user_message})
-            history.append({"role": "assistant", "content": full_reply_clean})
-            
-            # 4. Lưu lịch sử (lưu bản sạch không có dấu |)
-                full_reply_clean = ai_reply.replace('|', '\n')
+                full_reply_clean = " ".join(messages_to_send)
                 history.append({"role": "user", "content": user_message})
                 history.append({"role": "assistant", "content": full_reply_clean})
             
