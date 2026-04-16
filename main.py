@@ -87,8 +87,8 @@ async def on_message(message: discord.Message):
             return
 
         # 2. Xử lý độ thân mật
-        add_affinity(user_id, message.guild.id, 1) 
-        points = get_affinity(user_id, message.guild.id)
+        db.add_affinity(user_id, message.guild.id, 1) 
+        points = db.get_affinity(user_id, message.guild.id)
 
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not user_message: user_message = "Em ơi!"
