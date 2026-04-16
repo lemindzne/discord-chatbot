@@ -86,12 +86,18 @@ async def on_message(message: discord.Message):
         if target_channel_id and message.channel.id != target_channel_id:
             return
 
-        # 2. Xử lý độ thân mật
-        db.add_affinity(user_id, message.guild.id, 1) 
-        points = db.get_affinity(user_id, message.guild.id)
-
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not user_message: user_message = "Em ơi!"
+
+        bonus = 1
+        if len(user_message) > 50: 
+            bonus = 3
+        elif len(user_message) > 20: 
+            bonus = 2
+
+        # 2. Xử lý độ thân mật
+        db.add_affinity(user_id, message.guild.id, bonus) 
+        points = db.get_affinity(user_id, message.guild.id)
 
         history = conversation_history[user_id]
         history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
