@@ -80,7 +80,7 @@ async def on_message(message: discord.Message):
 
     if random.random() < 0.3:
         lucky_coins = random.randint(5, 15)
-        update_user_coins(message.author.id, lucky_coins)
+        db.update_user_coins(message.author.id, lucky_coins)
         await message.add_reaction("💰")
 
     if bot.user in message.mentions:
