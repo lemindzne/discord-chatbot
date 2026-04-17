@@ -53,7 +53,7 @@ def clear_all_data():
         conn.commit()
 
 def get_user_coins(user_id):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT coins FROM users WHERE user_id = ?', (user_id,))
     result = cursor.fetchone()
@@ -61,7 +61,7 @@ def get_user_coins(user_id):
     return result[0] if result else 0
 
 def update_user_coins(user_id, amount):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     # Kiểm tra user tồn tại chưa, chưa thì tạo
     cursor.execute('INSERT OR IGNORE INTO users (user_id, coins) VALUES (?, 0)', (user_id,))
@@ -70,7 +70,7 @@ def update_user_coins(user_id, amount):
     conn.close()
 
 def update_affinity(user_id, amount):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('INSERT OR IGNORE INTO users (user_id, points) VALUES (?, 0)', (user_id,))
     cursor.execute('UPDATE users SET points = points + ? WHERE user_id = ?', (amount, user_id))
@@ -78,7 +78,7 @@ def update_affinity(user_id, amount):
     conn.close()
 
 def add_to_inventory(user_id, item_id, qty):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('INSERT OR IGNORE INTO inventory (user_id, item_id, quantity) VALUES (?, ?, 0)', (user_id, item_id))
     cursor.execute('UPDATE inventory SET quantity = quantity + ? WHERE user_id = ? AND item_id = ?', (qty, user_id, item_id))
@@ -86,7 +86,7 @@ def add_to_inventory(user_id, item_id, qty):
     conn.close()
 
 def get_inventory(user_id):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT item_id, quantity FROM inventory WHERE user_id = ? AND quantity > 0', (user_id,))
     results = cursor.fetchall()
@@ -94,7 +94,7 @@ def get_inventory(user_id):
     return results
 
 def remove_from_inventory(user_id, item_id, qty):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('UPDATE inventory SET quantity = quantity - ? WHERE user_id = ? AND item_id = ?', (qty, user_id, item_id))
     conn.commit()
