@@ -72,11 +72,16 @@ def limit_exact_sentences(text: str, is_special_user: bool = False):
     return " ".join(sentences[:target_count]) if len(sentences) >= target_count else " ".join(sentences)
 
 # =====================
-# ON MESSAGE (Logic chính)
+# Logic for bot
 # =====================
 @bot.event
 async def on_message(message: discord.Message):
     if message.author.bot: return
+
+    if random.random() < 0.3:
+        lucky_coins = random.randint(5, 15)
+        update_user_coins(message.author.id, lucky_coins)
+        await message.add_reaction("💰")
 
     if bot.user in message.mentions:
         user_id = message.author.id
