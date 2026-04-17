@@ -2,7 +2,7 @@ import discord
 import os
 from discord.ext import commands
 from discord import app_commands
-import database as db # Đảm bảo file database.py có trong repo
+import database as db 
 
 SPECIAL_USER_ID = 695215402187489350
 
@@ -10,7 +10,6 @@ class MahiruCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Ví dụ 1 lệnh từ file main của bạn
     @app_commands.command(name="help", description="có thêm thông tin cơ bản về bot")
     async def help_command(self, interaction: discord.Interaction):
         embed = discord.Embed(
@@ -18,7 +17,6 @@ class MahiruCommands(commands.Cog):
             color=0xffc0cb
         )
     
-        # Giải thích cơ chế độ thân mật
         embed.add_field(
             name="💖 Cơ chế Độ thân mật (Affinity)",
         value=(
