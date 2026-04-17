@@ -116,7 +116,7 @@ class MahiruCommands(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=False)
     
     @app_commands.command(name="setchannel", description="Chọn kênh để bot chat khi được tag")
-    async def setchannel(self interaction: discord.Interaction, channel: discord.TextChannel):
+    async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         global server_channels
         if not interaction.user.guild_permissions.manage_guild:
             return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=False)
