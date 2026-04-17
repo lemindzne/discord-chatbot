@@ -145,10 +145,25 @@ async def on_message(message: discord.Message):
 @bot.event
 async def on_ready():
     print(f"✅ Mahiru online: {bot.user}")
+    
+    # Danh sách các file Cog muốn nạp (không ghi đuôi .py)
+    extensions = [
+        "cogs.commands", # Nếu file nằm trong folder cogs
+        "cogs.shop"      # Nạp file shop.py
+    ]
+
+    for ext in extensions:
+        try:
+            await bot.load_extension(ext)
+            print(f"✅ Đã nạp thành công: {ext}")
+        except Exception as e:
+            print(f"❌ Lỗi khi nạp {ext}: {e}")
+
+    # QUAN TRỌNG: Đồng bộ lệnh Slash lên Discord
     try:
-        await bot.load_extension("cogs.commands")
-        print("✅ Đã kết nối file lệnh thành công!")
+        synced = await bot.tree.sync()
+        print(f"✅ Đã đồng bộ {len(synced)} lệnh Slash!")
     except Exception as e:
-        print(f"❌ Lỗi: {e}")
+        print(f"❌ Lỗi đồng bộ lệnh: {e}")
         
 bot.run(TOKEN)
