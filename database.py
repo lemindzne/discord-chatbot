@@ -69,14 +69,6 @@ def update_user_coins(user_id, amount):
     conn.commit()
     conn.close()
 
-def update_affinity(user_id, amount):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('INSERT OR IGNORE INTO users (user_id, points) VALUES (?, 0)', (user_id,))
-    cursor.execute('UPDATE users SET points = points + ? WHERE user_id = ?', (amount, user_id))
-    conn.commit()
-    conn.close()
-
 def add_to_inventory(user_id, item_id, qty):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
