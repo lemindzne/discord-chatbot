@@ -84,7 +84,7 @@ class Shop(commands.Cog):
 
         item_info = self.items[item_id]
         db.remove_from_inventory(interaction.user.id, item_id, 1)
-        db.update_affinity(interaction.user.id, item_info['buff'])
+        db.add_affinity(interaction.user.id, interaction.guild.id, item_info['buff'])
 
         await interaction.response.send_message(
             f"🎁 Cậu tặng **{item_info['name']}** cho Mahiru.\n"
