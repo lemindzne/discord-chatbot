@@ -6,16 +6,16 @@ DB_PATH = os.getenv("DB_PATH", "mahiru.db")
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # Tạo bảng nếu chưa có
     c.execute('''CREATE TABLE IF NOT EXISTS affinity 
-                 (user_id INTEGER, guild_id INTEGER, points INTEGER DEFAULT 0,
+                 (user_id INTEGER,
+                 guild_id INTEGER,
+                 points INTEGER DEFAULT 0,
+                 coins INTEGER DEFAULT 0,
                   PRIMARY KEY (user_id, guild_id))''')
     
-    # KIỂM TRA VÀ NÂNG CẤP CỘT (Fix lỗi no such column)
     try:
         c.execute("SELECT guild_id FROM affinity LIMIT 1")
     except sqlite3.OperationalError:
-        # Nếu lỗi nghĩa là chưa có cột guild_id, tiến hành thêm vào
         print("Đang nâng cấp database: Thêm cột guild_id...")
         c.execute("ALTER TABLE affinity ADD COLUMN guild_id INTEGER DEFAULT 0")
         conn.commit()
@@ -51,5 +51,22 @@ def clear_all_data():
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("DELETE FROM affinity")
         conn.commit()
+
+def get_user_coins(user_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT coins FROM users WHERE user_id = ?', (user_id,))
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else 0
+
+def update_user_coins(user_id, amount):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    # Kiểm tra user tồn tại chưa, chưa thì tạo
+    cursor.execute('INSERT OR IGNORE INTO users (user_id, coins) VALUES (?, 0)', (user_id,))
+    cursor.execute('UPDATE users SET coins = coins + ? WHERE user_id = ?', (amount, user_id))
+    conn.commit()
+    conn.close()
 
 init_db()
