@@ -1,4 +1,5 @@
 import discord
+import os
 from discord.ext import commands
 from discord import app_commands
 import database as db # Đảm bảo file database.py có trong repo
