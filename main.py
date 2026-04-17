@@ -17,12 +17,11 @@ from collections import defaultdict, deque
 # =====================
 load_dotenv() 
 TOKEN = os.getenv("DISCORD_TOKEN")
-GROQ_KEY = os.getenv("GROQ_API_KEY") # Đảm bảo biến này khớp với .env
-DB_PATH = os.getenv("DB_PATH", "mahiru.db") # Đường dẫn lưu file database
+GROQ_KEY = os.getenv("GROQ_API_KEY") 
+DB_PATH = os.getenv("DB_PATH", "mahiru.db") 
 
 client = Groq(api_key=GROQ_KEY)
 
-# ID user đặc biệt
 SPECIAL_USER_ID = 695215402187489350
 lover_nickname = "min-kun"
 
@@ -82,7 +81,6 @@ async def on_message(message: discord.Message):
     if bot.user in message.mentions:
         user_id = message.author.id
         
-        # 1. Quản lý kênh chat (Giữ logic cũ của bạn)
         target_channel_id = server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
             return
@@ -96,14 +94,12 @@ async def on_message(message: discord.Message):
         elif len(user_message) > 20: 
             bonus = 2
 
-        # 2. Xử lý độ thân mật
         db.add_affinity(user_id, message.guild.id, bonus) 
         points = db.get_affinity(user_id, message.guild.id)
 
         history = conversation_history[user_id]
         history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
 
-        # 3. Thiết lập Prompt dựa trên độ thân mật
         if user_id == SPECIAL_USER_ID:
             is_special = True
             system_prompt = prompts.get_special_prompt(lover_nickname, history_text)
@@ -115,12 +111,10 @@ async def on_message(message: discord.Message):
             ai_reply = await get_ai_response(system_prompt, user_message)
         
             if ai_reply:
-            # 1. Dọn dẹp định dạng (Chỉ giữ lại 1 dấu ngã, xóa các dấu xuống dòng thừa của AI)
                 ai_reply = re.sub(r'~+', '~', ai_reply)
                 ai_reply = re.sub(r'(\*.*?\*)', r'|\1|', ai_reply)
                 messages_to_send = [m.strip() for m in re.split(r'[|\n]', ai_reply) if m.strip()]
             
-                # 3. Gửi từng tin với hiệu ứng gõ phím riêng biệt
                 for i, msg in enumerate(messages_to_send):
                     async with message.channel.typing():
                         base_speed = len(msg) * random.uniform(0.05, 0.1)
@@ -129,13 +123,10 @@ async def on_message(message: discord.Message):
                         await asyncio.sleep(total_sleep)
                         
                         if i == 0:
-                        # Tin đầu tiên reply lại người dùng
                             await message.reply(msg)
                         else:
-                        # Các tin sau gửi như tin nhắn mới trong kênh
                             await message.channel.send(msg)
             
-            # 4. Lưu lịch sử (Lưu bản sạch không có ký hiệu phân tách)
                 full_reply_clean = " ".join(messages_to_send)
                 history.append({"role": "user", "content": user_message})
                 history.append({"role": "assistant", "content": full_reply_clean})
