@@ -3,6 +3,8 @@ from discord.ext import commands
 from discord import app_commands
 import database as db # Đảm bảo file database.py có trong repo
 
+SPECIAL_USER_ID = 695215402187489350
+
 class MahiruCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -172,7 +174,7 @@ class MahiruCommands(commands.Cog):
         
         if not top_users:
             return await interaction.response.send_message("Server này chưa ai làm quen với em cả... :<", ephemeral=True)
-    
+        
         embed = discord.Embed(
             title=f"🏆 BẢNG XẾP HẠNG THÂN MẬT - {interaction.guild.name} 🏆",
             color=0xffc0cb
