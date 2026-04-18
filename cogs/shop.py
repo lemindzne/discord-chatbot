@@ -15,7 +15,7 @@ DATE_LOCATIONS = {
 class ItemSelect(discord.ui.Select):
     def __init__(self, items):
         options = [
-            discord.SelectOption(label=info['name'], value=key, description=f"Giá: {info['price']} 💰")
+            discord.SelectOption(label=info['name'], value=key, description=f"Giá: {info['price']} €")
             for key, info in items.items()
         ]
         super().__init__(placeholder="Chọn một món quà muốn mua...", options=options)
@@ -72,7 +72,7 @@ class Shop(commands.Cog):
             color=0xffd700
         )
         for key, info in self.items.items():
-            embed.add_field(name=info['name'], value=f"Giá: **{info['price']}** 💰\nThân mật: **+{info['buff']}** ❤️", inline=True)
+            embed.add_field(name=info['name'], value=f"Giá: **{info['price']}** €\nThân mật: **+{info['buff']}** ❤️", inline=True)
         
         await interaction.response.send_message(embed=embed, view=ShopView(self.items))
 
@@ -82,7 +82,7 @@ class Shop(commands.Cog):
         coins = db.get_user_coins(interaction.user.id)
         
         embed = discord.Embed(title=f"🎒 Túi đồ của {interaction.user.name}", color=0x98fb98)
-        embed.add_field(name="Số dư:", value=f"**{coins}** 💰", inline=False)
+        embed.add_field(name="Số dư:", value=f"**{coins}** €", inline=False)
         
         if not inventory:
             embed.description = "Túi đồ trống rỗng..."
