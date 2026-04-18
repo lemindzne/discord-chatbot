@@ -94,7 +94,7 @@ async def on_message(message: discord.Message):
         elif len(user_message) > 20: 
             bonus = 2
         
-        target_channel_id = server_channels.get(message.guild.id)
+        target_channel_id = bot.server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
             return
 
