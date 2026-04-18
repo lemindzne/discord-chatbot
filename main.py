@@ -157,6 +157,9 @@ async def on_ready():
         except Exception as e:
             print(f"❌ Lỗi khi nạp {ext}: {e}")
 
+    if not bot.get_cog("MahiruCommands"):
+        print("⚠️ Cảnh báo: MahiruCommands chưa được nạp!")
+
     try:
         synced = await bot.tree.sync()
         print(f"✅ Đã đồng bộ {len(synced)} lệnh Slash!")
