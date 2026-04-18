@@ -38,6 +38,7 @@ bot = commands.Bot(command_prefix="$", intents=intents, help_command=None)
 bot.server_channels = {}
 bot.processing_lock = asyncio.Lock()
 bot.conversation_history = defaultdict(lambda: deque(maxlen=6))
+bot.spam_control = {} 
 
 # =====================
 # AI FUNCTIONS (Giữ nguyên của bạn)
@@ -82,6 +83,18 @@ async def on_message(message: discord.Message):
         user_id = message.author.id
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not user_message: user_message = "Em ơi!"
+
+        current_time = asyncio.get_event_loop().time()
+        last_time = bot.spam_control.get(user_id, 0)
+        cooldown_time = 5 
+
+        if current_time - last_time < cooldown_time:
+            return await message.reply(
+                f"Anh nhắn nhanh quá, em trả lời không kịp đâu~ Đợi {int(cooldown_time - (current_time - last_time))}s nữa nhé!", 
+                delete_after=3
+            )
+        
+        bot.spam_control[user_id] = current_time
 
 
         if random.random() < 0.1:
