@@ -6,63 +6,72 @@ import database as db
 
 SPECIAL_USER_ID = 695215402187489350
 
+class HelpSelect(discord.ui.Select):
+    def __init__(self, bot):
+        self.bot = bot
+        options = [
+            discord.SelectOption(label="💖 Cơ chế Thân mật", description="Cách Mahiru đối xử với cậu theo điểm số.", emoji="💖"),
+            discord.SelectOption(label="📜 Lệnh người dùng", description="Các lệnh dành cho tất cả mọi người.", emoji="📜"),
+            discord.SelectOption(label="⚙️ Lệnh quản trị", description="Dành riêng cho Owner & Admin.", emoji="⚙️")
+        ]
+        super().__init__(placeholder="Cậu muốn tìm hiểu về phần nào?...", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        selection = self.values[0]
+        embed = discord.Embed(color=0xffc0cb)
+
+        if selection == "💖 Cơ chế Thân mật":
+            embed.title = "💖 Cơ chế Độ thân mật (Affinity)"
+            embed.description = (
+                "• **Dưới 100:** Người dưng - Mahiru lạnh lùng, giữ khoảng cách.\n"
+                "• **100 - 300:** Bạn cùng lớp - Lịch sự xã giao.\n"
+                "• **300 - 600:** Người quen - Bắt đầu dịu dàng hơn.\n"
+                "• **600 - 1000:** Bạn tốt - Mở lòng và quan tâm.\n"
+                "• **1000 - 1500:** Bạn thân thiết - Nũng nịu và chăm sóc.\n"
+                "• **1500 - 2500:** Người quan trọng - Quấn quýt, ỷ lại.\n"
+                "• **Trên 2500:** Tri kỷ trọn đời - Mức độ cao nhất. ✨"
+            )
+        
+        elif selection == "📜 Lệnh người dùng":
+            embed.title = "📜 Danh sách lệnh hệ thống"
+            embed.add_field(name="Trò chuyện", value="`/check_affinity`: Check điểm\n`/leaderboard`: Bảng xếp hạng\n`/resetmemory`: Reset chat", inline=False)
+            embed.add_field(name="Hẹn hò & Quà tặng", value="`/shop`: Mua quà\n`/bag`: Túi đồ\n`/gift`: Tặng quà\n`/date`: Đổi địa điểm", inline=False)
+
+        elif selection == "⚙️ Lệnh quản trị":
+            embed.title = "⚙️ Lệnh Owner & Admin"
+            embed.description = (
+                "`/setchannel`: Cố định kênh hoạt động.\n"
+                "`/setlovername`: (Owner) Đổi nickname em gọi anh.\n"
+                "`/sync`: Cập nhật hệ thống.\n"
+                "`/get_db`: Lấy file dữ liệu."
+            )
+
+        # Cập nhật lại tin nhắn cũ với nội dung mới
+        await interaction.response.edit_message(embed=embed, view=self.view)
+
+class HelpView(discord.ui.View):
+    def __init__(self, bot):
+        super().__init__(timeout=60)
+        self.add_item(HelpSelect(bot))
+        
 class MahiruCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.conversation_history = {}
         self.server_channels = {}
 
-    @app_commands.command(name="help", description="có thêm thông tin cơ bản về bot")
+    @app_commands.command(name="help", description="Xem hướng dẫn sử dụng bot Mahiru")
     async def help_command(self, interaction: discord.Interaction):
         embed = discord.Embed(
-            title="Tổng Quan Về Mahiru-chan 🌸",
+            title="🌸 Hướng dẫn sử dụng Mahiru-chan",
+            description="Chào cậu! Mình là Mahiru. Cậu muốn mình hướng dẫn về phần nào dưới đây?",
             color=0xffc0cb
         )
-    
-        embed.add_field(
-            name="💖 Cơ chế Độ thân mật (Affinity)",
-        value=(
-            "Mỗi khi bạn tag và trò chuyện, bạn sẽ nhận được điểm thân mật.\n\n"
-            "• **Dưới 100:** Mahiru lạnh lùng, giữ khoảng cách tuyệt đối.\n"
-            "• **100 - 300:** Bắt đầu nhận diện bạn học, lịch sự xã giao.\n"
-            "• **300 - 600:** Người quen, bớt cảnh giác và dịu dàng hơn.\n"
-            "• **600 - 1000:** Bạn tốt, bắt đầu mở lòng và chia sẻ nhiều hơn.\n"
-            "• **1000 - 1500:** Bạn thân thiết, nũng nịu và quan tâm sâu sắc.\n"
-            "• **1500 - 2500:** Tình cảm bùng nổ, quấn quýt và ỷ lại vào bạn.\n"
-            "• **Trên 2500:** Tri kỷ trọn đời, mức độ thân mật cao nhất."
-        ),
-            inline=False
-        )
-    
-        # Danh sách lệnh cho người dùng
-        embed.add_field(
-            name="📜 command ",
-            value=(
-                "`/check_affinity`: check độ thân mật hiện tại\n"
-                "`/leaderboard`: bảng xếp hạng điểm thân mật\n"
-                "`/resetmemory`: reset cuộc trò chuyện gần nhất của mahiru"
-            ),
-            inline=True
-        )
-    
-        # Danh sách lệnh quản trị
-        embed.add_field(
-            name="⚙️ Owner & Administrator only",
-            value=(
-                "`/setchannel`: Cố định nơi em sẽ xuất hiện.\n"
-                "`/setlovername`: (Owner) Đổi nickname em gọi anh.\n"
-                "`/resetallmemory`: (Owner) Xóa sạch ký ức của em.\n"
-                "`/sync`: (Owner) Cập nhật hệ thống của em."
-            ),
-            inline=True
-        )
-    
-        embed.set_footer(text="tag hoặc reply để trò chuyện với bot ")
         
-        if self.bot.user.avatar:
-            embed.set_thumbnail(url="https://media4.giphy.com/media/v1.Y2lkPTZjMDliOTUyand2NWJ1eGp6OGY1dHR4N3NydHRqcTA4Mzk1cHM1cjl1NHNsM3ZrYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/x2aO0plLdV7wGNzQxt/giphy.gif")
-    
-        await interaction.response.send_message(embed=embed)
+        # Thêm ảnh GIF cho sinh động
+        embed.set_image(url="https://media1.tenor.com/m/BqAF9L-2EjAAAAAd/mahiru.gif")
+        
+        await interaction.response.send_message(embed=embed, view=HelpView(self.bot))
         
     @app_commands.command(name="check_affinity", description="Xem độ thân mật của bạn")
     async def check_affinity(self, interaction: discord.Interaction):
