@@ -80,6 +80,9 @@ async def on_message(message: discord.Message):
 
     if bot.user in message.mentions:
         user_id = message.author.id
+        user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
+        if not user_message: user_message = "Em ơi!"
+
 
         if random.random() < 0.1:
             lucky_coins = random.randint(5, 15)
@@ -94,10 +97,6 @@ async def on_message(message: discord.Message):
         target_channel_id = server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
             return
-
-        user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
-        if not user_message: user_message = "Em ơi!"
-
 
         db.add_affinity(user_id, message.guild.id, bonus) 
         points = db.get_affinity(user_id, message.guild.id)
