@@ -12,6 +12,14 @@ def init_db():
                  points INTEGER DEFAULT 0,
                  coins INTEGER DEFAULT 0,
                   PRIMARY KEY (user_id, guild_id))''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS inventory (
+            user_id INTEGER,
+            item_id TEXT,
+            quantity INTEGER,
+            PRIMARY KEY (user_id, item_id)
+        )
+    ''')
     
     try:
         c.execute("SELECT guild_id FROM affinity LIMIT 1")
