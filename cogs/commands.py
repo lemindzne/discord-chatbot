@@ -133,13 +133,9 @@ class MahiruCommands(commands.Cog):
             
             # 3. Tạo Embed thông báo thành công
             embed_success = discord.Embed(
-                title="Từ giờ em sẽ chỉ hoạt động và trò chuyện tại kênh {channel.mention} này thôi nhé! :3",
+                title=f"**Từ giờ em sẽ chỉ hoạt động và trò chuyện tại kênh {channel.mention} này thôi nhé! :3**",
                 color=discord.Color.from_rgb(255, 182, 193) # Màu hồng nhạt
             )
-            embed_success.add_field(name="Server", value=interaction.guild.name, inline=True)
-            embed_success.add_field(name="Người thực hiện", value=interaction.user.name, inline=True)
-            embed_success.set_thumbnail(url=self.bot.user.display_avatar.url)
-            embed_success.set_footer(text="Mahiru Shiina • Always by your side")
 
             await interaction.response.send_message(embed=embed_success)
 
