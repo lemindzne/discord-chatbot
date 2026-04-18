@@ -36,6 +36,15 @@ def init_db():
     
     conn.close()
 
+def init_settings_table():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # Tạo bảng lưu channel ID cho từng server
+    c.execute('''CREATE TABLE IF NOT EXISTS server_settings 
+                 (guild_id INTEGER PRIMARY KEY, channel_id INTEGER)''')
+    conn.commit()
+    conn.close()
+    
 def get_affinity(user_id, guild_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -105,5 +114,20 @@ def remove_from_inventory(user_id, item_id, qty):
     cursor.execute('UPDATE inventory SET quantity = quantity - ? WHERE user_id = ? AND item_id = ?', (qty, user_id, item_id))
     conn.commit()
     conn.close()
+
+def update_server_channel(guild_id, channel_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT OR REPLACE INTO server_settings (guild_id, channel_id) VALUES (?, ?)", (guild_id, channel_id))
+    conn.commit()
+    conn.close()
+
+def get_all_server_channels():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT guild_id, channel_id FROM server_settings")
+    rows = c.fetchall()
+    conn.close()
+    return {row[0]: row[1] for row in rows}
 
 init_db()
