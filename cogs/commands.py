@@ -9,6 +9,7 @@ SPECIAL_USER_ID = 695215402187489350
 class MahiruCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.conversation_history = {}
 
     @app_commands.command(name="help", description="có thêm thông tin cơ bản về bot")
     async def help_command(self, interaction: discord.Interaction):
