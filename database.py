@@ -133,12 +133,10 @@ def get_all_server_channels():
     return {row[0]: row[1] for row in rows}
 
 def set_user_context(user_id, location_id):
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
     try:
         c.execute("UPDATE users SET current_context = ? WHERE user_id = ?", (location_id, user_id))
     except sqlite3.OperationalError:
-        c.execute("ALTER TABLE users ADD COLUMN current_context TEXT DEFAULT 'school'")
+        c.execute("ALTER TABLE users ADD COLUMN current_context TEXT DEFAULT 'truong_hoc'")
         c.execute("UPDATE users SET current_context = ? WHERE user_id = ?", (location_id, user_id))
     conn.commit()
     conn.close()
