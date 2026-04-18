@@ -101,7 +101,7 @@ async def on_message(message: discord.Message):
         db.add_affinity(user_id, message.guild.id, bonus) 
         points = db.get_affinity(user_id, message.guild.id)
 
-        history = conversation_history[user_id]
+        history = bot.conversation_history[user_id]
         history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
 
         if user_id == SPECIAL_USER_ID:
