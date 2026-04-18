@@ -34,6 +34,20 @@ class ItemSelect(discord.ui.Select):
         
         await interaction.response.send_message(f"📦 Đã mua **{item_info['name']}** thành công! Cậu có thể kiểm tra trong `/bag`.", ephemeral=True)
 
+class DateSelect(discord.ui.Select):
+    def __init__(self, user_points):
+        options = [
+            discord.SelectOption(label=info['name'], value=key)
+            for key, info in DATE_LOCATIONS.items() 
+            if user_points >= info['points'] # CHỈ HIỆN NẾU ĐỦ ĐIỂM
+        ]
+        super().__init__(placeholder="Rủ Mahiru đi đâu đó...", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        loc_id = self.values[0]
+        db.set_user_context(interaction.user.id, loc_id)
+        await interaction.response.send_message(f"Mahiru: 'Được chứ, mình đi đến **{DATE_LOCATIONS[loc_id]['name']}** nhé!~'", ephemeral=True)
+        
 # Class chứa giao diện Shop
 class ShopView(discord.ui.View):
     def __init__(self, items):
@@ -99,20 +113,6 @@ class Shop(commands.Cog):
             f"Mahiru: *\"{item_info['msg']}\"*\n"
             f"Thân mật **+{item_info['buff']}** ❤️"
         )
-
-class DateSelect(discord.ui.Select):
-    def __init__(self, user_points):
-        options = [
-            discord.SelectOption(label=info['name'], value=key)
-            for key, info in DATE_LOCATIONS.items() 
-            if user_points >= info['points'] # CHỈ HIỆN NẾU ĐỦ ĐIỂM
-        ]
-        super().__init__(placeholder="Rủ Mahiru đi đâu đó...", options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        loc_id = self.values[0]
-        db.set_user_context(interaction.user.id, loc_id)
-        await interaction.response.send_message(f"Mahiru: 'Được chứ, mình đi đến **{DATE_LOCATIONS[loc_id]['name']}** nhé!~'", ephemeral=True)
 
     @app_commands.command(name="date", description="đổi địa điểm trò chuyện cùng Mahiru")
     async def date(self, interaction: discord.Interaction):
