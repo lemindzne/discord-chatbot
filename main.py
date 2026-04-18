@@ -78,13 +78,12 @@ def limit_exact_sentences(text: str, is_special_user: bool = False):
 async def on_message(message: discord.Message):
     if message.author.bot: return
 
-    if random.random() < 0.3:
-        lucky_coins = random.randint(5, 15)
-        db.update_user_coins(message.author.id, lucky_coins)
-        await message.add_reaction("💰")
-
     if bot.user in message.mentions:
         user_id = message.author.id
+
+        if random.random() < 0.1:
+        lucky_coins = random.randint(5, 15)
+        db.update_user_coins(message.author.id, lucky_coins)
         
         target_channel_id = server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
