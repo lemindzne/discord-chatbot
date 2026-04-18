@@ -12,7 +12,7 @@ def init_db():
                  points INTEGER DEFAULT 0,
                  coins INTEGER DEFAULT 0,
                   PRIMARY KEY (user_id, guild_id))''')
-    cursor.execute('''
+    c.execute('''
         CREATE TABLE IF NOT EXISTS inventory (
             user_id INTEGER,
             item_id TEXT,
