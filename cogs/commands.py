@@ -64,7 +64,7 @@ class HelpSelect(discord.ui.Select):
             )
 
         # Cập nhật lại tin nhắn cũ với nội dung mới
-        await interaction.response.edit_message(embed=embed, view=self.view)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class HelpView(discord.ui.View):
     def __init__(self, bot):
