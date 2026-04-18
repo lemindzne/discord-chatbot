@@ -145,6 +145,9 @@ async def on_message(message: discord.Message):
 async def on_ready():
     print(f"✅ Mahiru online: {bot.user}")
     
+    bot.server_channels = db.get_all_server_channels()
+    print(f"📂 Đã nạp cấu hình kênh cho {len(bot.server_channels)} server.")
+    
     extensions = [
         "cogs.commands", 
         "cogs.shop"      
