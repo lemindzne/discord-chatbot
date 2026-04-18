@@ -147,6 +147,6 @@ def get_user_context(user_id):
     c.execute("SELECT current_context FROM users WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     conn.close()
-    return result[0] if result and result[0] else "school"
+    return result[0] if result and result[0] else "truong_hoc"
 
 init_db()
