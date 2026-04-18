@@ -111,7 +111,7 @@ async def on_message(message: discord.Message):
             is_special = False
             system_prompt = prompts.get_normal_prompt(points, history_text)
     
-        async with processing_lock:
+        async with bot.processing_lock:
             ai_reply = await get_ai_response(system_prompt, user_message)
         
             if ai_reply:
