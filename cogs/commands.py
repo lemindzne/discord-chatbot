@@ -123,7 +123,7 @@ class MahiruCommands(commands.Cog):
             return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=False)
         
         # Lưu ID kênh cho server hiện tại
-        self.server_channels[interaction.guild.id] = channel.id
+        self.bot.server_channels[interaction.guild.id] = channel.id
         
         await interaction.response.send_message(f"✅ em sẽ chỉ chat trong kênh: {channel.mention} :3")
         
@@ -131,7 +131,7 @@ class MahiruCommands(commands.Cog):
     async def clearchannel(self, interaction: discord.Interaction):
         global server_channels
         if interaction.guild_id in server_channels:
-            del self.server_channels[interaction.guild_id]
+            del self.bot.server_channels[interaction.guild_id]
             await interaction.response.send_message(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
         else:
             await interaction.response.send_message("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
