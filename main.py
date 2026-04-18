@@ -84,6 +84,12 @@ async def on_message(message: discord.Message):
         if random.random() < 0.1:
             lucky_coins = random.randint(5, 15)
             db.update_user_coins(message.author.id, lucky_coins)
+
+        bonus = 1
+        if len(user_message) > 50: 
+            bonus = 3
+        elif len(user_message) > 20: 
+            bonus = 2
         
         target_channel_id = server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
@@ -92,11 +98,6 @@ async def on_message(message: discord.Message):
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not user_message: user_message = "Em ơi!"
 
-        bonus = 1
-        if len(user_message) > 50: 
-            bonus = 3
-        elif len(user_message) > 20: 
-            bonus = 2
 
         db.add_affinity(user_id, message.guild.id, bonus) 
         points = db.get_affinity(user_id, message.guild.id)
@@ -145,10 +146,9 @@ async def on_message(message: discord.Message):
 async def on_ready():
     print(f"✅ Mahiru online: {bot.user}")
     
-    # Danh sách các file Cog muốn nạp (không ghi đuôi .py)
     extensions = [
-        "cogs.commands", # Nếu file nằm trong folder cogs
-        "cogs.shop"      # Nạp file shop.py
+        "cogs.commands", 
+        "cogs.shop"      
     ]
 
     for ext in extensions:
@@ -158,7 +158,6 @@ async def on_ready():
         except Exception as e:
             print(f"❌ Lỗi khi nạp {ext}: {e}")
 
-    # QUAN TRỌNG: Đồng bộ lệnh Slash lên Discord
     try:
         synced = await bot.tree.sync()
         print(f"✅ Đã đồng bộ {len(synced)} lệnh Slash!")
