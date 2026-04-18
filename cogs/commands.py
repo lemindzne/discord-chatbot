@@ -121,7 +121,7 @@ class MahiruCommands(commands.Cog):
             return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=False)
         
         # Lưu ID kênh cho server hiện tại
-        server_channels[interaction.guild.id] = channel.id
+        self.server_channels[interaction.guild.id] = channel.id
         
         await interaction.response.send_message(f"✅ em sẽ chỉ chat trong kênh: {channel.mention} :3")
         
@@ -129,7 +129,7 @@ class MahiruCommands(commands.Cog):
     async def clearchannel(self, interaction: discord.Interaction):
         global server_channels
         if interaction.guild_id in server_channels:
-            del server_channels[interaction.guild_id]
+            del self.server_channels[interaction.guild_id]
             await interaction.response.send_message(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
         else:
             await interaction.response.send_message("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
@@ -138,7 +138,7 @@ class MahiruCommands(commands.Cog):
     async def resetmemory(self, interaction: discord.Interaction):
         user_id = interaction.user.id
         if user_id in conversation_history:
-            conversation_history[user_id].clear()
+            self.conversation_history[user_id].clear()
             await interaction.response.send_message("🧹 Lịch sử hội thoại của bạn đã được xoá sạch!", ephemeral=True)
         else:
             await interaction.response.send_message("❌ Bạn chưa có lịch sử hội thoại nào để xoá.", ephemeral=True)
@@ -152,7 +152,7 @@ class MahiruCommands(commands.Cog):
                 ephemeral=True
             )
         
-        conversation_history.clear()
+        self.conversation_history.clear()
         await interaction.response.send_message("🧹 Toàn bộ lịch sử hội thoại đã được xoá sạch!", ephemeral=True)
     # ... Các lệnh setchannel, clearchannel, resetmemory giữ nguyên như code cũ của bạn ...
     
