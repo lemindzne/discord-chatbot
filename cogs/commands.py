@@ -31,6 +31,20 @@ class HelpSelect(discord.ui.Select):
                 "• **1500 - 2500:** Người quan trọng - Quấn quýt, ỷ lại.\n"
                 "• **Trên 2500:** Tri kỷ trọn đời - Mức độ cao nhất. ✨"
             )
+
+        elif selection == "💰 Hệ thống Coin (€)":
+            embed.title = "💰 Hệ thống Kinh tế của Mahiru"
+            embed.description = (
+                "Trong thế giới của Mahiru, coin (€) được dùng để mua các món quà ngọt ngào.\n\n"
+                "**1. Cách kiếm Xu:**\n"
+                "• Trò chuyện cùng Mahiru: Mỗi tin nhắn cậu gửi sẽ có cơ hội nhận được xu ngẫu nhiên.\n"
+                "**2. Cách sử dụng:**\n"
+                "• Dùng lệnh `/shop` để xem các món đồ đang bán.\n"
+                "• Mua vật phẩm để tặng qua `/gift`, giúp tăng nhanh điểm thân mật.\n"
+                "• Tích lũy để mở khóa các địa điểm hẹn hò đặc biệt.\n\n"
+                "**3. Kiểm tra số dư:**\n"
+                "• Số xu hiện tại của cậu luôn hiển thị ở dòng đầu tiên khi dùng lệnh `/bag`."
+            )
         
         elif selection == "📜 Lệnh người dùng":
             embed.title = "📜 Danh sách lệnh hệ thống"
