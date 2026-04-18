@@ -26,6 +26,8 @@ def init_db():
             coins INTEGER DEFAULT 0
         )
     ''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS server_settings (guild_id INTEGER PRIMARY KEY, channel_id INTEGER)''')
     
     try:
         c.execute("SELECT guild_id FROM affinity LIMIT 1")
