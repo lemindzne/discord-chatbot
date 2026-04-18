@@ -21,6 +21,7 @@ class HelpSelect(discord.ui.Select):
         selection = self.values[0]
         embed = discord.Embed(color=0xffc0cb)
         embed.title = selection
+        embed.description = "Đang tải dữ liệu..."
         
         if selection == "💖 Cơ chế Thân mật":
             embed.title = "💖 Cơ chế Độ thân mật (Affinity)"
