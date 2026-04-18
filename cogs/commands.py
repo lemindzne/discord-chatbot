@@ -116,16 +116,35 @@ class MahiruCommands(commands.Cog):
             )
             await interaction.response.send_message(embed=embed, ephemeral=False)
     
-    @app_commands.command(name="setchannel", description="Chọn kênh để bot chat khi được tag")
+    @app_commands.command(name="setchannel", description="Thiết lập kênh cố định cho bot (Owner only)")
     async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        global server_channels
-        if not interaction.user.guild_permissions.manage_guild:
-            return await interaction.response.send_message("❌ Bạn không có quyền dùng lệnh này.", ephemeral=False)
-        
-        # Lưu ID kênh cho server hiện tại
-        self.bot.server_channels[interaction.guild.id] = channel.id
-        
-        await interaction.response.send_message(f"✅ em sẽ chỉ chat trong kênh: {channel.mention} :3")
+        if interaction.user.id != SPECIAL_USER_ID:
+            embed_error = discord.Embed(
+                title="🚫 U have no perm kiddo",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed_error, ephemeral=True)
+            return
+
+        try:
+            # 2. Lưu dữ liệu
+            self.bot.server_channels[interaction.guild.id] = channel.id
+            db.update_server_channel(interaction.guild.id, channel.id)
+            
+            # 3. Tạo Embed thông báo thành công
+            embed_success = discord.Embed(
+                title="Từ giờ em sẽ chỉ hoạt động và trò chuyện tại kênh {channel.mention} này thôi nhé! :3",
+                color=discord.Color.from_rgb(255, 182, 193) # Màu hồng nhạt
+            )
+            embed_success.add_field(name="Server", value=interaction.guild.name, inline=True)
+            embed_success.add_field(name="Người thực hiện", value=interaction.user.name, inline=True)
+            embed_success.set_thumbnail(url=self.bot.user.display_avatar.url)
+            embed_success.set_footer(text="Mahiru Shiina • Always by your side")
+
+            await interaction.response.send_message(embed=embed_success)
+
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Có lỗi xảy ra: {e}", ephemeral=True)
         
     @app_commands.command(name="clearchannel", description="Cho phép bot chat mọi kênh ở server này")
     async def clearchannel(self, interaction: discord.Interaction):
