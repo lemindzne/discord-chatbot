@@ -114,12 +114,34 @@ class Shop(commands.Cog):
             f"Thân mật **+{item_info['buff']}** ❤️"
         )
 
-    @app_commands.command(name="date", description="đổi địa điểm trò chuyện cùng Mahiru")
+    @app_commands.command(name="date", description="Đổi địa điểm trò chuyện cùng Mahiru")
     async def date(self, interaction: discord.Interaction):
+        # Lấy điểm và bối cảnh hiện tại từ Database
         points = db.get_affinity(interaction.user.id, interaction.guild.id)
-        view = discord.ui.View()
-        view.add_item(DateSelect(points))
-        await interaction.response.send_message("Cậu muốn rủ mình đi đâu?", view=view, ephemeral=False)
+        current_loc_id = db.get_user_context(interaction.user.id)
+        
+        # Lấy tên hiển thị của địa điểm hiện tại (nếu có trong DATE_LOCATIONS)
+        current_loc_name = DATE_LOCATIONS.get(current_loc_id, {}).get("name", "Hành lang trường")
 
+        # Tạo Embed
+        embed = discord.Embed(
+            title="📍 Hẹn hò cùng Mahiru",
+            description=(
+                f"Cậu muốn cùng Mahiru đi đâu hôm nay nào?\n\n"
+                f"❤️ **Thân mật hiện tại:** `{points}`\n"
+                f"🏠 **Địa điểm hiện tại:** `{current_loc_name}`"
+            ),
+            color=0xff69b4 # Màu hồng lãng mạn
+        )
+        
+        # Thêm ảnh minh họa nếu muốn (tùy chọn)
+        embed.set_footer(text="Gợi ý: Tặng thêm Pudding để mở khóa địa điểm mới nhé~")
+
+        view = discord.ui.View()
+        # Đừng quên truyền interaction.user.id để hỗ trợ Special User nếu cậu đã thêm logic đó
+        view.add_item(DateSelect(interaction.user.id, points)) 
+        
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
+        
 async def setup(bot):
     await bot.add_cog(Shop(bot))
