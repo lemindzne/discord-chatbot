@@ -133,6 +133,8 @@ def get_all_server_channels():
     return {row[0]: row[1] for row in rows}
 
 def set_user_context(user_id, location_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
     try:
         c.execute("UPDATE users SET current_context = ? WHERE user_id = ?", (location_id, user_id))
     except sqlite3.OperationalError:
@@ -143,6 +145,7 @@ def set_user_context(user_id, location_id):
 
 def get_user_context(user_id):
     conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
     c.execute("SELECT current_context FROM users WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     conn.close()
