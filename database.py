@@ -10,14 +10,20 @@ def init_db():
                  (user_id INTEGER,
                  guild_id INTEGER,
                  points INTEGER DEFAULT 0,
-                 coins INTEGER DEFAULT 0,
-                  PRIMARY KEY (user_id, guild_id))''')
+                 PRIMARY KEY (user_id, guild_id))''')
     c.execute('''
         CREATE TABLE IF NOT EXISTS inventory (
             user_id INTEGER,
             item_id TEXT,
             quantity INTEGER,
             PRIMARY KEY (user_id, item_id)
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INTEGER PRIMARY KEY,
+            coins INTEGER DEFAULT 0
         )
     ''')
     
