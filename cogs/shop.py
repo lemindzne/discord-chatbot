@@ -3,6 +3,14 @@ from discord import app_commands
 from discord.ext import commands
 import database as db
 
+DATE_LOCATIONS = {
+    "truong_hoc": {"name": "Hành lang trường", "points": 0},
+    "cong_vien": {"name": "Công viên (Tập luyện)", "points": 600},
+    "sieu_thi": {"name": "Siêu thị", "points": 1000},
+    "quan_cafe": {"name": "Quán Cafe", "points": 1500},
+    "nha_rieng": {"name": "Nhà riêng", "points": 2500}
+}
+
 # Class tạo Menu chọn món đồ
 class ItemSelect(discord.ui.Select):
     def __init__(self, items):
@@ -91,6 +99,27 @@ class Shop(commands.Cog):
             f"Mahiru: *\"{item_info['msg']}\"*\n"
             f"Thân mật **+{item_info['buff']}** ❤️"
         )
+
+class DateSelect(discord.ui.Select):
+    def __init__(self, user_points):
+        options = [
+            discord.SelectOption(label=info['name'], value=key)
+            for key, info in DATE_LOCATIONS.items() 
+            if user_points >= info['points'] # CHỈ HIỆN NẾU ĐỦ ĐIỂM
+        ]
+        super().__init__(placeholder="Rủ Mahiru đi đâu đó...", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        loc_id = self.values[0]
+        db.set_user_context(interaction.user.id, loc_id)
+        await interaction.response.send_message(f"Mahiru: 'Được chứ, mình đi đến **{DATE_LOCATIONS[loc_id]['name']}** nhé!~'", ephemeral=True)
+
+    @app_commands.command(name="date", description="đổi địa điểm trò chuyện cùng Mahiru")
+    async def date(self, interaction: discord.Interaction):
+        points = db.get_affinity(interaction.user.id, interaction.guild.id)
+        view = discord.ui.View()
+        view.add_item(DateSelect(points))
+        await interaction.response.send_message("Cậu muốn rủ mình đi đâu?", view=view, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Shop(bot))
