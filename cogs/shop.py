@@ -119,7 +119,7 @@ class Shop(commands.Cog):
         points = db.get_affinity(interaction.user.id, interaction.guild.id)
         view = discord.ui.View()
         view.add_item(DateSelect(points))
-        await interaction.response.send_message("Cậu muốn rủ mình đi đâu?", view=view, ephemeral=True)
+        await interaction.response.send_message("Cậu muốn rủ mình đi đâu?", view=view, ephemeral=False)
 
 async def setup(bot):
     await bot.add_cog(Shop(bot))
