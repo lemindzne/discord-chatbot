@@ -81,7 +81,7 @@ async def on_message(message: discord.Message):
     if bot.user in message.mentions:
         user_id = message.author.id
 
-        if random.random() < 0.1:
+    if random.random() < 0.1:
         lucky_coins = random.randint(5, 15)
         db.update_user_coins(message.author.id, lucky_coins)
         
