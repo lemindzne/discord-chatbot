@@ -11,7 +11,7 @@ class HelpSelect(discord.ui.Select):
         self.bot = bot
         options = [
             discord.SelectOption(label="💖 Cơ chế Thân mật", description="Cách Mahiru đối xử với cậu theo điểm số.", emoji="💖"),
-            discord.SelectOption(label="💰 Hệ thống Xu (Coin)", description="Cách kiếm và sử dụng xu mua quà.", emoji="💰"),
+            discord.SelectOption(label="💰 Hệ thống Coin (€))", description="Cách kiếm và sử dụng xu mua quà.", emoji="💰"),
             discord.SelectOption(label="📜 Lệnh người dùng", description="Các lệnh dành cho tất cả mọi người.", emoji="📜"),
             discord.SelectOption(label="⚙️ Lệnh quản trị", description="Dành riêng cho Owner & Admin.", emoji="⚙️")
         ]
