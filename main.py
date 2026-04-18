@@ -35,9 +35,9 @@ intents.message_content = True
 intents.reactions = True
 bot = commands.Bot(command_prefix="$", intents=intents, help_command=None)
 
-server_channels = {}
-processing_lock = asyncio.Lock()
-conversation_history = defaultdict(lambda: deque(maxlen=6))
+bot.server_channels = {}
+bot.processing_lock = asyncio.Lock()
+bot.conversation_history = defaultdict(lambda: deque(maxlen=6))
 
 # =====================
 # AI FUNCTIONS (Giữ nguyên của bạn)
