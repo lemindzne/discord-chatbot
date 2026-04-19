@@ -7,7 +7,7 @@ import database as db
 SPECIAL_USER_ID = 695215402187489350
 
 class HelpSelect(discord.ui.Select):
-    def __init__(self, bot):
+    def __init__(self, author_id, bot):
         self.author_id = author_id
         self.bot = bot
         options = [
@@ -74,7 +74,7 @@ class HelpSelect(discord.ui.Select):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class HelpView(discord.ui.View):
-    def __init__(self, bot):
+    def __init__(self, author_id, bot):
         super().__init__(timeout=120)
         self.add_item(HelpSelect(bot, author_id))
         
