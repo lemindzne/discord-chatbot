@@ -118,7 +118,7 @@ async def on_message(message: discord.Message):
         history = bot.conversation_history[user_id]
         history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
 
-        system_prompt = prompts.get_system_prompt(user_id=user_id, points=points, history_text=history_text, location=user_location, lover_nickname=lover_nickname)
+        system_prompt = prompts.get_system_prompt(user_id, points, history_text, user_location, lover_nickname)
     
         async with bot.processing_lock:
             ai_reply = await get_ai_response(system_prompt, user_message)
