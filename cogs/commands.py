@@ -95,7 +95,7 @@ class MahiruCommands(commands.Cog):
         # Thêm ảnh GIF cho sinh động
         embed.set_image(url="https://media.tenor.com/BqAF9L-2EjAAAAAC/mahiru.gif")
         
-        await interaction.response.send_message(embed=embed, view=HelpView(self.bot))
+        await interaction.response.send_message(embed=embed, view=HelpView(self.bot, interaction.user.id))
         
     @app_commands.command(name="check_affinity", description="Xem độ thân mật của bạn")
     async def check_affinity(self, interaction: discord.Interaction):
