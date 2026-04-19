@@ -148,31 +148,29 @@ def check_give_cooldown(user_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
-    # 1. Thử lấy thời gian nhận lần cuối của user
+    # 1. Lấy dữ liệu người dùng
     c.execute("SELECT last_give FROM users WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     
     current_time = int(time.time())
     
-    # 2. Kiểm tra nếu user đã từng nhận tiền trước đó
+    # 2. Kiểm tra Cooldown (Fix triệt để lỗi biến không xác định)
     if result and result[0] is not None:
-        last_give_time = result[0]
-        elapsed = current_time - last_give_time
-        
-        # Nếu chưa đủ 12 giờ (43200 giây)
+        last_give_val = result[0]
+        elapsed = current_time - last_give_val
         if elapsed < 43200:
             conn.close()
-            return 43200 - elapsed # Trả về số giây còn lại phải chờ
+            return 43200 - elapsed  # Còn bao nhiêu giây thì trả về bấy nhiêu
             
-    # 3. Nếu là người dùng mới hoặc đã qua 12 giờ:
-    # Đảm bảo user tồn tại trong bảng users
+    # 3. Nếu được phép nhận (người mới hoặc đã qua 12h)
+    # Đảm bảo user đã có trong bảng
     c.execute("INSERT OR IGNORE INTO users (user_id, coins) VALUES (?, 0)", (user_id,))
     
-    # Cập nhật thời gian nhận mới nhất
     try:
+        # Cập nhật thời gian nhận mới nhất
         c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
     except sqlite3.OperationalError:
-        # Nếu database cũ chưa có cột last_give, tự động thêm vào
+        # Tự động thêm cột nếu database cũ chưa có
         c.execute("ALTER TABLE users ADD COLUMN last_give INTEGER DEFAULT 0")
         c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
         
