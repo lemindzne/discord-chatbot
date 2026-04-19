@@ -26,7 +26,7 @@ contexts = {
     )
 }    
 
-SPECIAL_USER_ID = [695215402187489350]
+SPECIAL_USER_ID = 695215402187489350
 
 def get_special_prompt(lover_nickname, history_text):
     current_desc = contexts.get(location, contexts["truong_hoc"])
