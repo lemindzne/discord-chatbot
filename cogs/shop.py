@@ -15,7 +15,7 @@ SPECIAL_USERS = [695215402187489350]
 
 # Class tạo Menu chọn món đồ
 class ItemSelect(discord.ui.Select):
-    def __init__(self, items):
+    def __init__(self, author_id, items):
         self.author_id = author_id
         options = [
             discord.SelectOption(label=info['name'], value=key, description=f"Giá: {info['price']} €")
@@ -66,10 +66,10 @@ class DateSelect(discord.ui.Select):
         await interaction.response.send_message(f"Mahiru: 'Được chứ, mình đi đến **{DATE_LOCATIONS[loc_id]['name']}** nhé!~'", ephemeral=True)
         
 class ShopView(discord.ui.View):
-    def __init__(self, items):
+    def __init__(self, author_id, items):
         super().__init__(timeout=60)
         self.items = items
-        self.add_item(ItemSelect(author_id))
+        self.add_item(ItemSelect(author_id, items))
 
 class Shop(commands.Cog):
     def __init__(self, bot):
@@ -82,7 +82,7 @@ class Shop(commands.Cog):
 
     @app_commands.command(name="shop", description="Mở cửa hàng quà tặng Mahiru")
     async def shop(self, interaction: discord.Interaction):
-        view = ShopView(interaction.user.id)
+        view = ShopView(interaction.user.id, self.items)
         
         embed = discord.Embed(
             title="🏪 Tiệm Tạp Hóa Mahiru", 
