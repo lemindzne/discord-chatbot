@@ -166,25 +166,25 @@ class Shop(commands.Cog):
         
     @app_commands.command(name="give", description="Nhận trợ cấp hàng ngày từ Mahiru (50-100€)")
     async def give(self, interaction: discord.Interaction):
-        # Kiểm tra cooldown từ Database
-        remaining_seconds = db.check_give_cooldown(interaction.user.id)
+        # Kiểm tra cooldown từ database
+        wait_time = db.check_give_cooldown(interaction.user.id)
         
-        if remaining_seconds > 0:
-            hours = int(remaining_seconds // 3600)
-            minutes = int((remaining_seconds % 3600) // 60)
+        if wait_time > 0:
+            hours = int(wait_time // 3600)
+            minutes = int((wait_time % 3600) // 60)
             return await interaction.response.send_message(
                 f"Mahiru khẽ nhíu mày: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
                 ephemeral=True
             )
 
-        # Nếu hết thời gian chờ thì thực hiện cộng tiền
+        # Nếu được phép nhận (wait_time == 0)
         random_coins = random.randint(50, 100)
         db.update_user_coins(interaction.user.id, random_coins)
         
         responses = [
-            f"Mahiru mỉm cười: 'Cậu cầm lấy một ít tiền tiêu vặt nhé, đừng có tiêu xài hoang phí đấy~'",
-            f"Mahiru đưa túi tiền nhỏ cho cậu: 'Đây là phần mình tiết kiệm được, cậu cầm lấy đi~'",
-            f"Mahiru khẽ nhắc: 'Cậu cần mua gì sao? Mình giúp cậu một chút nhé~'"
+            "Mahiru mỉm cười: 'Cậu cầm lấy một ít tiền tiêu vặt nhé, đừng có tiêu xài hoang phí đấy~'",
+            "Mahiru đưa túi tiền nhỏ cho cậu: 'Đây là phần mình tiết kiệm được, cậu cầm lấy đi~'",
+            "Mahiru khẽ nhắc: 'Cậu cần mua gì sao? Mình giúp cậu một chút nhé~'"
         ]
         
         embed = discord.Embed(
@@ -193,23 +193,6 @@ class Shop(commands.Cog):
             color=0xffd700
         )
         await interaction.response.send_message(embed=embed)
-
-    # Hàm xử lý lỗi khi chưa hết thời gian chờ
-    @give.error
-    async def give_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-        if isinstance(error, app_commands.CommandOnCooldown):
-            seconds = error.retry_after
-            hours = int(seconds // 3600)
-            minutes = int((seconds % 3600) // 60)
-            
-            # Gửi tin nhắn phản hồi cho người dùng
-            await interaction.response.send_message(
-                f"Mahiru khẽ nhíu mày: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
-                ephemeral=False # Chỉ mình cậu thấy tin nhắn này
-            )
-        else:
-            # Nếu là lỗi khác thì mới in ra console
-            print(f"Lỗi hệ thống tại lệnh give: {error}")
         
 async def setup(bot):
     await bot.add_cog(Shop(bot))
