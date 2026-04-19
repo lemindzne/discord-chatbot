@@ -190,20 +190,19 @@ class Shop(commands.Cog):
     # Hàm xử lý lỗi khi chưa hết thời gian chờ
     @give.error
     async def give_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-        if isinstance(error, commands.CommandOnCooldown):
-            # Tính toán thời gian còn lại
+        if isinstance(error, app_commands.CommandOnCooldown):
             seconds = error.retry_after
             hours = int(seconds // 3600)
             minutes = int((seconds % 3600) // 60)
             
+            # Gửi tin nhắn phản hồi cho người dùng
             await interaction.response.send_message(
-                f"Mahiru: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
-                ephemeral=True
+                f"Mahiru khẽ nhíu mày: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
+                ephemeral=False # Chỉ mình cậu thấy tin nhắn này
             )
         else:
-            # Các lỗi khác nếu có
-            print(f"Lỗi lệnh give: {error}")
-
+            # Nếu là lỗi khác thì mới in ra console
+            print(f"Lỗi hệ thống tại lệnh give: {error}")
         
 async def setup(bot):
     await bot.add_cog(Shop(bot))
