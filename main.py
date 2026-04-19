@@ -24,7 +24,6 @@ client = Groq(api_key=GROQ_KEY)
 
 SPECIAL_USER_ID = 695215402187489350
 lover_nickname = "min-kun"
-user_location = db.get_user_context(user_id) or "truong_hoc"
 
 # =====================
 # BOT SETUP
@@ -82,6 +81,7 @@ async def on_message(message: discord.Message):
 
     if bot.user in message.mentions:
         user_id = message.author.id
+        user_location = db.get_user_context(user_id) or "truong_hoc"
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not user_message: user_message = "Em ơi!"
 
@@ -118,19 +118,7 @@ async def on_message(message: discord.Message):
         history = bot.conversation_history[user_id]
         history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
 
-        if user_id == SPECIAL_USER_ID:
-            is_special = True
-            # Đối với Special User, bạn có thể bổ sung bối cảnh vào system prompt
-            base_prompt = prompts.get_special_prompt(lover_nickname, history_text)
-            
-            # Tạo mô tả bối cảnh ngắn gọn để nhắc AI (vì get_special_prompt chưa có tham số location)
-            loc_names = {"truong_hoc": "trường học", "quan_cafe": "quán cafe", "nha_rieng": "nhà riêng"}
-            current_loc = loc_names.get(user_location, "trường học")
-            system_prompt = f"{base_prompt}\nBỐI CẢNH HIỆN TẠI: Bạn và {lover_nickname} đang ở {current_loc}. Hãy điều chỉnh hành động cho phù hợp."
-        else:
-            is_special = False
-            # 2. Truyền tham số location vào hàm get_normal_prompt (Dựa trên prompts (2).py)
-            system_prompt = prompts.get_normal_prompt(points, history_text, location=user_location)
+        system_prompt = prompts.get_system_prompt(user_id=user_id, points=points, history_text=history_text, location=user_location, lover_nickname=lover_nickname)
     
         async with bot.processing_lock:
             ai_reply = await get_ai_response(system_prompt, user_message)
