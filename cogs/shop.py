@@ -173,8 +173,8 @@ class Shop(commands.Cog):
             hours = int(wait_time // 3600)
             minutes = int((wait_time % 3600) // 60)
             return await interaction.response.send_message(
-                f"Mahiru khẽ nhíu mày: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
-                ephemeral=True
+                f"Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~",
+                ephemeral=False
             )
 
         # Nếu được phép nhận (wait_time == 0)
