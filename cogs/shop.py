@@ -90,7 +90,7 @@ class Shop(commands.Cog):
             description="Hãy chọn món đồ cậu muốn mua từ menu bên dưới nhé!",
             color=0xffd700
         )
-        embed.set_image(url="https://media.tenor.com/rLKqg7FmVYwAAAAC/angel-tenshi.gif
+        embed.set_image(url="https://media.tenor.com/rLKqg7FmVYwAAAAC/angel-tenshi.gif")
         for key, info in self.items.items():
             embed.add_field(name=info['name'], value=f"Giá: **{info['price']}** €\nThân mật: **+{info['buff']}** ❤️", inline=True)
         
