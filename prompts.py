@@ -28,7 +28,7 @@ contexts = {
 
 SPECIAL_USER_ID = 695215402187489350
 
-def get_special_prompt(lover_nickname, history_text):
+def get_special_prompt(lover_nickname, history_text, location):
     current_desc = contexts.get(location, contexts["truong_hoc"])
     return (
         f"Mahiru Shiina là một nữ sinh viên 19 tuổi thông minh và giàu lòng trắc ẩn. Cô ấy có niềm đam mê mãnh liệt với việc học, may vá, đan lát và nghệ thuật origami. "
