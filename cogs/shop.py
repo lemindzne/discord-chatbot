@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import database as db
+import random
 
 DATE_LOCATIONS = {
     "truong_hoc": {"name": "Hành lang trường", "points": 0},
@@ -162,6 +163,44 @@ class Shop(commands.Cog):
         view.add_item(DateSelect(interaction.user.id, points)) 
         
         await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
+        
+    @app_commands.command(name="give", description="Nhận trợ cấp hàng ngày từ Mahiru (50-100€)")
+    @commands.cooldown(1, 43200, commands.BucketType.user)
+    async def give(self, interaction: discord.Interaction):
+        # Tạo số coin ngẫu nhiên từ 50 đến 100
+        random_coins = random.randint(50, 100)
+        
+        # Cập nhật vào database cho user
+        db.update_user_coins(interaction.user.id, random_coins)
+        
+        # Tạo câu trả lời dễ thương từ Mahiru
+        responses = [
+            f"Mahiru mỉm cười: 'Cậu cầm lấy một ít tiền tiêu vặt nhé, đừng có tiêu xài hoang phí đấy~'",
+            f"Mahiru đưa túi tiền nhỏ cho cậu: 'Đây là phần mình tiết kiệm được, cậu cầm lấy đi~'",
+            f"Mahiru khẽ nhắc: 'Cậu cần mua gì sao? Mình giúp cậu một chút nhé~'"
+        ]
+        
+        embed = discord.Embed(
+            title="💰 Trợ cấp từ Mahiru",
+            description=f"{random.choice(responses)}\n\nCậu đã nhận được: **{random_coins}** €",
+            color=0xffd700
+        )
+        await interaction.response.send_message(embed=embed)
+
+    # Hàm xử lý lỗi khi chưa hết thời gian chờ
+    @give.error
+    async def give_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, commands.CommandOnCooldown):
+            # Tính toán thời gian còn lại
+            seconds = error.retry_after
+            hours = int(seconds // 3600)
+            minutes = int((seconds % 3600) // 60)
+            
+            await interaction.response.send_message(
+                f"Mahiru: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
+                ephemeral=True
+            )
+
         
 async def setup(bot):
     await bot.add_cog(Shop(bot))
