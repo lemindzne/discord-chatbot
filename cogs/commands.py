@@ -8,6 +8,7 @@ SPECIAL_USER_ID = 695215402187489350
 
 class HelpSelect(discord.ui.Select):
     def __init__(self, bot):
+        self.author_id = author_id
         self.bot = bot
         options = [
             discord.SelectOption(label="💖 Cơ chế Thân mật", description="Cách Mahiru đối xử với cậu theo điểm số.", emoji="💖"),
@@ -18,6 +19,12 @@ class HelpSelect(discord.ui.Select):
         super().__init__(placeholder="Cậu muốn tìm hiểu về phần nào?...", options=options)
 
     async def callback(self, interaction: discord.Interaction):
+        if interaction.user.id != self.author_id:
+            return await interaction.response.send_message(
+                "Menu này không phải dành cho cậu đâu nhé!~", 
+                ephemeral=True
+            )
+            
         selection = self.values[0]
         embed = discord.Embed(color=0xffc0cb)
         embed.title = selection
