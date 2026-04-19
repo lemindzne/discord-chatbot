@@ -59,7 +59,7 @@ class DateSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.author_id:
             return await interaction.response.send_message(
-                "Cậu định rủ Mahiru đi mà không hỏi ý chủ nhân sao? Không được đâu!", 
+                "alo em là vũ à vũ em định rủ vợ anh đi đâu?", 
                 ephemeral=True
             )
         loc_id = self.values[0]
