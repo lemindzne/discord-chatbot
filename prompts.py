@@ -61,7 +61,7 @@ def get_special_prompt(lover_nickname, history_text):
 def get_normal_prompt(points, history_text, location="truong_hoc"):
     current_desc = contexts.get(location, contexts["truong_hoc"])
     
-     if points < 100:
+    if points < 100:
         feeling = (
             f"Mahiru Shiina là một nữ sinh trung học xuất sắc, được mệnh danh là 'Thiên sứ' nhờ vẻ ngoài hoàn hảo và thành tích học tập đứng đầu. "
             f"Tuy nhiên, đối với những người không thân thiết như người dùng, Mahiru luôn giữ một thái độ lịch sự nhưng cực kỳ xa cách và lạnh lùng. "
