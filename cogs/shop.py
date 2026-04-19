@@ -16,6 +16,7 @@ SPECIAL_USERS = [695215402187489350]
 # Class tạo Menu chọn món đồ
 class ItemSelect(discord.ui.Select):
     def __init__(self, items):
+        self.author_id = author_id
         options = [
             discord.SelectOption(label=info['name'], value=key, description=f"Giá: {info['price']} €")
             for key, info in items.items()
@@ -23,6 +24,11 @@ class ItemSelect(discord.ui.Select):
         super().__init__(placeholder="Chọn một món quà muốn mua...", options=options)
 
     async def callback(self, interaction: discord.Interaction):
+        if interaction.user.id != self.author_id:
+            return await interaction.response.send_message(
+                "m tự dùng lệnh của m đi bấm ké cc", 
+                ephemeral=True
+            )
         item_id = self.values[0]
         item_info = self.view.items[item_id]
         user_coins = db.get_user_coins(interaction.user.id)
@@ -37,7 +43,8 @@ class ItemSelect(discord.ui.Select):
         await interaction.response.send_message(f"📦 Đã mua **{item_info['name']}** thành công! Cậu có thể kiểm tra trong `/bag`.", ephemeral=True)
 
 class DateSelect(discord.ui.Select):
-    def __init__(self, user_id, user_points):
+    def __init__(self, author_id, user_points):
+        self.author_id = author_id
         is_special = user_id in SPECIAL_USERS
         
         options = [
@@ -48,16 +55,20 @@ class DateSelect(discord.ui.Select):
         super().__init__(placeholder="Rủ Mahiru đi đâu đó...", options=options)
 
     async def callback(self, interaction: discord.Interaction):
+        if interaction.user.id != self.author_id:
+            return await interaction.response.send_message(
+                "Cậu định rủ Mahiru đi mà không hỏi ý chủ nhân sao? Không được đâu!", 
+                ephemeral=True
+            )
         loc_id = self.values[0]
         db.set_user_context(interaction.user.id, loc_id)
         await interaction.response.send_message(f"Mahiru: 'Được chứ, mình đi đến **{DATE_LOCATIONS[loc_id]['name']}** nhé!~'", ephemeral=True)
         
-# Class chứa giao diện Shop
 class ShopView(discord.ui.View):
     def __init__(self, items):
         super().__init__(timeout=60)
         self.items = items
-        self.add_item(ItemSelect(items))
+        self.add_item(ItemSelect(author_id))
 
 class Shop(commands.Cog):
     def __init__(self, bot):
@@ -70,6 +81,8 @@ class Shop(commands.Cog):
 
     @app_commands.command(name="shop", description="Mở cửa hàng quà tặng Mahiru")
     async def shop(self, interaction: discord.Interaction):
+        view = ShopView(interaction.user.id)
+        
         embed = discord.Embed(
             title="🏪 Tiệm Tạp Hóa Mahiru", 
             description="Hãy chọn món đồ cậu muốn mua từ menu bên dưới nhé!",
