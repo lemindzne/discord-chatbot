@@ -5,11 +5,13 @@ import database as db
 
 DATE_LOCATIONS = {
     "truong_hoc": {"name": "Hành lang trường", "points": 0},
-    "cong_vien": {"name": "Công viên (Tập luyện)", "points": 600},
+    "cong_vien": {"name": "Công viên", "points": 600},
     "sieu_thi": {"name": "Siêu thị", "points": 1000},
     "quan_cafe": {"name": "Quán Cafe", "points": 1500},
     "nha_rieng": {"name": "Nhà riêng", "points": 2500}
 }
+
+SPECIAL_USERS = [695215402187489350]
 
 # Class tạo Menu chọn món đồ
 class ItemSelect(discord.ui.Select):
@@ -35,11 +37,13 @@ class ItemSelect(discord.ui.Select):
         await interaction.response.send_message(f"📦 Đã mua **{item_info['name']}** thành công! Cậu có thể kiểm tra trong `/bag`.", ephemeral=True)
 
 class DateSelect(discord.ui.Select):
-    def __init__(self, user_points):
+    def __init__(self, user_id, user_points):
+        is_special = user_id in SPECIAL_USERS
+        
         options = [
             discord.SelectOption(label=info['name'], value=key)
             for key, info in DATE_LOCATIONS.items() 
-            if user_points >= info['points'] # CHỈ HIỆN NẾU ĐỦ ĐIỂM
+            if is_special or user_points >= info['points'] # CHỈ HIỆN NẾU ĐỦ ĐIỂM
         ]
         super().__init__(placeholder="Rủ Mahiru đi đâu đó...", options=options)
 
