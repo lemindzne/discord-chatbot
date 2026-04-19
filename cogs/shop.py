@@ -93,7 +93,7 @@ class Shop(commands.Cog):
         for key, info in self.items.items():
             embed.add_field(name=info['name'], value=f"Giá: **{info['price']}** €\nThân mật: **+{info['buff']}** ❤️", inline=True)
         
-        await interaction.response.send_message(embed=embed, view=ShopView(self.items))
+        await interaction.response.send_message(embed=embed, view=view)
 
     @app_commands.command(name="bag", description="Xem túi đồ và tặng quà")
     async def bag(self, interaction: discord.Interaction):
