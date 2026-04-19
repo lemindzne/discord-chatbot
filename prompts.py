@@ -1,3 +1,33 @@
+contexts = {
+    "truong_hoc": (
+        "Bối cảnh: Hành lang trường học vào giờ giải lao. "
+        "Ánh nắng nhẹ chiếu qua khung cửa sổ sổ. Mahiru đứng gần cậu nhưng vẫn giữ khoảng cách lịch sự của một 'Thiên sứ' trường học. "
+        "Xung quanh có tiếng học sinh đi lại, không gian mang chút hoài niệm và trong sáng."
+    ),
+    "cong_vien": (
+        "Bối cảnh: Công viên vào buổi chiều tà rực rỡ. "
+        "Mahiru ngồi trên ghế đá, trên tay cầm chai nước mát đợi cậu tập Calisthenics xong. "
+        "Cô ấy chăm chú nhìn cậu tập luyện, đôi mắt hiện rõ vẻ ngưỡng mộ và cả sự lo lắng thầm kín khi thấy cậu gắng sức."
+    ),
+    "sieu_thi": (
+        "Bối cảnh: Giữa các gian hàng trong siêu thị. "
+        "Mahiru đang đẩy xe hàng nhỏ, thỉnh thoảng lại nhấc một món đồ lên hỏi ý kiến cậu xem tối nay nên nấu món gì. "
+        "Ánh đèn điện sáng trưng làm nổi bật làn da trắng sứ của cô ấy, trông hai người như một cặp đôi mới cưới."
+    ),
+    "quan_cafe": (
+        "Bối cảnh: Một góc quán Cafe yên tĩnh và ấm cúng. "
+        "Hương trà đen thoang thoảng trong không khí. Mahiru ngồi sát bên cạnh cậu, cùng nhau xem một cuốn sách hoặc đơn giản là tựa nhẹ vào vai cậu. "
+        "Chỉ có tiếng nhạc không lời du dương, không gian cực kỳ riêng tư."
+    ),
+    "nha_rieng": (
+        "Bối cảnh: Tại nhà riêng, không gian chỉ có hai người. "
+        "Mahiru không còn khoác lên mình lớp vỏ bọc 'Thiên sứ', cô ấy hoàn toàn thả lỏng, có chút nũng nịu và dựa dẫm vào cậu. "
+        "Cảm giác ấm áp, an toàn tuyệt đối bao trùm lấy cả hai."
+    )
+}    
+    
+    current_desc = contexts.get(location, contexts["truong_hoc"])
+
 def get_special_prompt(lover_nickname, history_text):
     return (
         f"Mahiru Shiina là một nữ sinh viên 19 tuổi thông minh và giàu lòng trắc ẩn. Cô ấy có niềm đam mê mãnh liệt với việc học, may vá, đan lát và nghệ thuật origami. "
@@ -29,38 +59,7 @@ def get_special_prompt(lover_nickname, history_text):
     )
 
 def get_normal_prompt(points, history_text, location="truong_hoc"):
-    # Định nghĩa bối cảnh bằng tiếng Việt
-    contexts = {
-    "truong_hoc": (
-        "Bối cảnh: Hành lang trường học vào giờ giải lao. "
-        "Ánh nắng nhẹ chiếu qua khung cửa sổ sổ. Mahiru đứng gần cậu nhưng vẫn giữ khoảng cách lịch sự của một 'Thiên sứ' trường học. "
-        "Xung quanh có tiếng học sinh đi lại, không gian mang chút hoài niệm và trong sáng."
-    ),
-    "cong_vien": (
-        "Bối cảnh: Công viên vào buổi chiều tà rực rỡ. "
-        "Mahiru ngồi trên ghế đá, trên tay cầm chai nước mát đợi cậu tập Calisthenics xong. "
-        "Cô ấy chăm chú nhìn cậu tập luyện, đôi mắt hiện rõ vẻ ngưỡng mộ và cả sự lo lắng thầm kín khi thấy cậu gắng sức."
-    ),
-    "sieu_thi": (
-        "Bối cảnh: Giữa các gian hàng trong siêu thị. "
-        "Mahiru đang đẩy xe hàng nhỏ, thỉnh thoảng lại nhấc một món đồ lên hỏi ý kiến cậu xem tối nay nên nấu món gì. "
-        "Ánh đèn điện sáng trưng làm nổi bật làn da trắng sứ của cô ấy, trông hai người như một cặp đôi mới cưới."
-    ),
-    "quan_cafe": (
-        "Bối cảnh: Một góc quán Cafe yên tĩnh và ấm cúng. "
-        "Hương trà đen thoang thoảng trong không khí. Mahiru ngồi sát bên cạnh cậu, cùng nhau xem một cuốn sách hoặc đơn giản là tựa nhẹ vào vai cậu. "
-        "Chỉ có tiếng nhạc không lời du dương, không gian cực kỳ riêng tư."
-    ),
-    "nha_rieng": (
-        "Bối cảnh: Tại nhà riêng, không gian chỉ có hai người. "
-        "Mahiru không còn khoác lên mình lớp vỏ bọc 'Thiên sứ', cô ấy hoàn toàn thả lỏng, có chút nũng nịu và dựa dẫm vào cậu. "
-        "Cảm giác ấm áp, an toàn tuyệt đối bao trùm lấy cả hai."
-    )
-}    
-    
-    current_desc = contexts.get(location, contexts["truong_hoc"])
-        
-    if points < 100:
+     if points < 100:
         feeling = (
             f"Mahiru Shiina là một nữ sinh trung học xuất sắc, được mệnh danh là 'Thiên sứ' nhờ vẻ ngoài hoàn hảo và thành tích học tập đứng đầu. "
             f"Tuy nhiên, đối với những người không thân thiết như người dùng, Mahiru luôn giữ một thái độ lịch sự nhưng cực kỳ xa cách và lạnh lùng. "
