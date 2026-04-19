@@ -165,7 +165,7 @@ class Shop(commands.Cog):
         await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
         
     @app_commands.command(name="give", description="Nhận trợ cấp hàng ngày từ Mahiru (50-100€)")
-    @commands.cooldown(1, 43200, commands.BucketType.user)
+    @app_commands.checks.cooldown(1, 43200.0, key=lambda i: i.user.id)
     async def give(self, interaction: discord.Interaction):
         # Tạo số coin ngẫu nhiên từ 50 đến 100
         random_coins = random.randint(50, 100)
@@ -200,6 +200,9 @@ class Shop(commands.Cog):
                 f"Mahiru: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
                 ephemeral=True
             )
+        else:
+            # Các lỗi khác nếu có
+            print(f"Lỗi lệnh give: {error}")
 
         
 async def setup(bot):
