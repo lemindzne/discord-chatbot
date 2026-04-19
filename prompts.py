@@ -208,3 +208,8 @@ def get_normal_prompt(points, history_text, location="truong_hoc"):
         f"- CẤM TUYỆT ĐỐI dùng '~~'.\n"
         f"Lịch sử hội thoại:\n{history_text}"
     )
+def get_system_prompt(user_id, points, history_text, location, lover_nickname="min-kun"):
+    if user_id == SPECIAL_USER_ID:
+        return get_special_prompt(lover_nickname, history_text, location)
+    else:
+        return get_normal_prompt(points, history_text, location)
