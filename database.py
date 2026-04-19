@@ -47,7 +47,7 @@ def init_db():
     conn.close()
 
 def init_settings_table():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH) 
     c = conn.cursor()
     # Tạo bảng lưu channel ID cho từng server
     c.execute('''CREATE TABLE IF NOT EXISTS server_settings 
