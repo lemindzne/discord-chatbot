@@ -21,7 +21,7 @@ class HelpSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.author_id:
             return await interaction.response.send_message(
-                "Menu này không phải dành cho cậu đâu nhé!~", 
+                "Menu này không phải dành cho cậu đâu nhé!~ (súc vật đòi bấm ké)", 
                 ephemeral=True
             )
             
