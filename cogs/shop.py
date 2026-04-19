@@ -165,15 +165,22 @@ class Shop(commands.Cog):
         await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
         
     @app_commands.command(name="give", description="Nhận trợ cấp hàng ngày từ Mahiru (50-100€)")
-    @app_commands.checks.cooldown(1, 43200.0, key=lambda i: i.user.id)
     async def give(self, interaction: discord.Interaction):
-        # Tạo số coin ngẫu nhiên từ 50 đến 100
-        random_coins = random.randint(50, 100)
+        # Kiểm tra cooldown từ Database
+        remaining_seconds = db.check_give_cooldown(interaction.user.id)
         
-        # Cập nhật vào database cho user
+        if remaining_seconds > 0:
+            hours = int(remaining_seconds // 3600)
+            minutes = int((remaining_seconds % 3600) // 60)
+            return await interaction.response.send_message(
+                f"Mahiru khẽ nhíu mày: 'Cậu vừa nhận rồi mà? Phải đợi **{hours} giờ {minutes} phút** nữa mình mới cho tiếp được nhé~'",
+                ephemeral=True
+            )
+
+        # Nếu hết thời gian chờ thì thực hiện cộng tiền
+        random_coins = random.randint(50, 100)
         db.update_user_coins(interaction.user.id, random_coins)
         
-        # Tạo câu trả lời dễ thương từ Mahiru
         responses = [
             f"Mahiru mỉm cười: 'Cậu cầm lấy một ít tiền tiêu vặt nhé, đừng có tiêu xài hoang phí đấy~'",
             f"Mahiru đưa túi tiền nhỏ cho cậu: 'Đây là phần mình tiết kiệm được, cậu cầm lấy đi~'",
