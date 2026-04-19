@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import time
 
 DB_PATH = os.getenv("DB_PATH", "mahiru.db")
 
@@ -150,5 +151,33 @@ def get_user_context(user_id):
     result = c.fetchone()
     conn.close()
     return result[0] if result and result[0] else "truong_hoc"
+
+def check_give_cooldown(user_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # Kiểm tra xem user đã có trong bảng chưa và lấy thời gian cuối cùng
+    c.execute("SELECT last_give FROM users WHERE user_id = ?", (user_id,))
+    result = c.fetchone()
+    
+    current_time = int(time.time())
+    if result and result[0]:
+        last_time = result[0]
+        # 43200 giây = 12 giờ
+        if current_time - last_time < 43200:
+            conn.close()
+            return 43200 - (current_time - last_time) # Trả về số giây còn lại
+            
+    # Nếu chưa nhận hoặc đã quá 12h, cập nhật thời gian mới
+    c.execute("INSERT OR IGNORE INTO users (user_id, coins) VALUES (?, 0)", (user_id,))
+    # Tự động thêm cột last_give nếu chưa có (để tránh lỗi database cũ)
+    try:
+        c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
+    except sqlite3.OperationalError:
+        c.execute("ALTER TABLE users ADD COLUMN last_give INTEGER DEFAULT 0")
+        c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
+        
+    conn.commit()
+    conn.close()
+    return 0
 
 init_db()
