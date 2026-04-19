@@ -68,8 +68,8 @@ class HelpSelect(discord.ui.Select):
 
 class HelpView(discord.ui.View):
     def __init__(self, bot):
-        super().__init__(timeout=60)
-        self.add_item(HelpSelect(bot))
+        super().__init__(timeout=120)
+        self.add_item(HelpSelect(bot, author_id))
         
 class MahiruCommands(commands.Cog):
     def __init__(self, bot):
