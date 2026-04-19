@@ -36,6 +36,13 @@ def init_db():
         print("Đang nâng cấp database: Thêm cột guild_id...")
         c.execute("ALTER TABLE affinity ADD COLUMN guild_id INTEGER DEFAULT 0")
         conn.commit()
+
+    try:
+        c.execute("SELECT last_give FROM users LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Đang nâng cấp: Thêm cột last_give vào bảng users...")
+        c.execute("ALTER TABLE users ADD COLUMN last_give INTEGER DEFAULT 0")
+        conn.commit()
     
     conn.close()
 
@@ -145,35 +152,31 @@ def set_user_context(user_id, location_id):
     conn.close()
 
 def check_give_cooldown(user_id):
+    import time # Đảm bảo có import time
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
-    # 1. Lấy dữ liệu người dùng
+    current_time = int(time.time())
+    
+    # Đảm bảo user tồn tại trong bảng users
+    c.execute("INSERT OR IGNORE INTO users (user_id, coins, last_give) VALUES (?, 0, 0)", (user_id,))
+    conn.commit()
+
+    # Lấy thời gian lần cuối
     c.execute("SELECT last_give FROM users WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     
-    current_time = int(time.time())
+    # Mặc định là 0 nếu không có dữ liệu
+    last_val = result[0] if result and result[0] is not None else 0
     
-    # 2. Kiểm tra Cooldown (Fix triệt để lỗi biến không xác định)
-    if result and result[0] is not None:
-        last_give_val = result[0]
-        elapsed = current_time - last_give_val
+    if last_val > 0:
+        elapsed = current_time - last_val
         if elapsed < 43200:
             conn.close()
-            return 43200 - elapsed  # Còn bao nhiêu giây thì trả về bấy nhiêu
+            return 43200 - elapsed
             
-    # 3. Nếu được phép nhận (người mới hoặc đã qua 12h)
-    # Đảm bảo user đã có trong bảng
-    c.execute("INSERT OR IGNORE INTO users (user_id, coins) VALUES (?, 0)", (user_id,))
-    
-    try:
-        # Cập nhật thời gian nhận mới nhất
-        c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
-    except sqlite3.OperationalError:
-        # Tự động thêm cột nếu database cũ chưa có
-        c.execute("ALTER TABLE users ADD COLUMN last_give INTEGER DEFAULT 0")
-        c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
-        
+    # Nếu được phép nhận, cập nhật thời gian mới
+    c.execute("UPDATE users SET last_give = ? WHERE user_id = ?", (current_time, user_id))
     conn.commit()
     conn.close()
     return 0
