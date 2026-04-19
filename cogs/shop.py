@@ -17,6 +17,7 @@ SPECIAL_USERS = [695215402187489350]
 class ItemSelect(discord.ui.Select):
     def __init__(self, author_id, items):
         self.author_id = author_id
+        self.items = items
         options = [
             discord.SelectOption(label=info['name'], value=key, description=f"Giá: {info['price']} €")
             for key, info in items.items()
@@ -30,7 +31,7 @@ class ItemSelect(discord.ui.Select):
                 ephemeral=True
             )
         item_id = self.values[0]
-        item_info = self.view.items[item_id]
+        item_info = self.items[item_id]
         user_coins = db.get_user_coins(interaction.user.id)
 
         if user_coins < item_info['price']:
@@ -46,7 +47,7 @@ class DateSelect(discord.ui.Select):
     def __init__(self, author_id, user_points):
         self.author_id = author_id
         SPECIAL_USERS = [695215402187489350]
-        is_special = user_id in SPECIAL_USERS
+        is_special = author_id in SPECIAL_USERS
         
         options = [
             discord.SelectOption(label=info['name'], value=key)
