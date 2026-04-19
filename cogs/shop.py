@@ -45,6 +45,7 @@ class ItemSelect(discord.ui.Select):
 class DateSelect(discord.ui.Select):
     def __init__(self, author_id, user_points):
         self.author_id = author_id
+        SPECIAL_USERS = [695215402187489350]
         is_special = user_id in SPECIAL_USERS
         
         options = [
