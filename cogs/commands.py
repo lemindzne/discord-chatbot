@@ -177,9 +177,10 @@ class MahiruCommands(commands.Cog):
         
     @commands.command(name="clearchannel")
     async def clearchannel(self, ctx):
-        global server_channels
-        if ctx.guild.id in server_channels:
-            del self.bot.server_channels[ctx.guild_id]
+        guild_id = ctx.guild.id
+        
+        if ctx.guild.id in self.bot.server_channels:
+            del self.bot.server_channels[guild_id]
             db.update_server_channel(guild_id, None)
             
             await ctx.send(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
