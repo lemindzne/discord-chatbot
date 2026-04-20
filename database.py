@@ -150,7 +150,15 @@ def set_user_context(user_id, location_id):
         c.execute("UPDATE users SET current_context = ? WHERE user_id = ?", (location_id, user_id))
     conn.commit()
     conn.close()
-
+    
+def get_user_context(user_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT current_context FROM users WHERE user_id = ?", (user_id,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result and result[0] else "truong_hoc"
+    
 def check_give_cooldown(user_id):
     import time # Đảm bảo có import time
     conn = sqlite3.connect(DB_PATH)
