@@ -95,11 +95,11 @@ class MahiruCommands(commands.Cog):
         # Thêm ảnh GIF cho sinh động
         embed.set_image(url="https://media.tenor.com/BqAF9L-2EjAAAAAC/mahiru.gif")
         
-        await interaction.response.send_message(embed=embed, view=HelpView(self.bot, ctx.author.id))
+        await ctx.send(embed=embed, view=HelpView(self.bot, ctx.author.id))
         
     @commands.command(name="affinity")
     async def check_affinity(self, ctx):
-        points = db.get_affinity(interaction.user.id, interaction.guild.id)
+        points = db.get_affinity(ctx.author.id, ctx.guild.id)
         
         # 7 mốc danh hiệu
         if points < 100:
@@ -151,7 +151,7 @@ class MahiruCommands(commands.Cog):
     
     @commands.command(name="setchannel")
     async def setchannel(self, ctx, channel: discord.TextChannel = None):
-        if interaction.user.id != SPECIAL_USER_ID:
+        if ctx.author.id != SPECIAL_USER_ID:
             embed_error = discord.Embed(
                 title="🚫 U have no perm kiddo",
                 color=discord.Color.red()
@@ -178,15 +178,15 @@ class MahiruCommands(commands.Cog):
     @commands.command(name="clearchannel")
     async def clearchannel(self, ctx):
         global server_channels
-        if interaction.guild_id in server_channels:
-            del self.bot.server_channels[interaction.guild_id]
+        if ctx.guild_id in server_channels:
+            del self.bot.server_channels[ctx.guild_id]
             await ctx.send(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
         else:
             await ctx.send("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
     
     @commands.command(name="resetmemory")
     async def resetmemory(self, ctx):
-        user_id = interaction.user.id
+        user_id = ctx.user.id
         if user_id in conversation_history:
             self.conversation_history[user_id].clear()
             await ctx.send("🧹 Lịch sử hội thoại của bạn đã được xoá sạch!", ephemeral=True)
@@ -219,10 +219,10 @@ class MahiruCommands(commands.Cog):
     @commands.command(name="leaderboard", aliases=["lb"])
     async def leaderboard(self, ctx):
         # Truyền guild ID vào hàm lấy top
-        top_users = db.get_leaderboard(interaction.guild.id, 10)
+        top_users = db.get_leaderboard(ctx.guild.id, 10)
         
         if not top_users:
-            return await interaction.response.send_message("Server này chưa ai làm quen với em cả... :<", ephemeral=True)
+            return await ctx.send("Server này chưa ai làm quen với em cả... :<", ephemeral=True)
         
         embed = discord.Embed(
             title=f"🏆 BẢNG XẾP HẠNG THÂN MẬT - {interaction.guild.name} 🏆",
