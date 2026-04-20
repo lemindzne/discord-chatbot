@@ -107,14 +107,14 @@ async def on_message(message: discord.Message):
             bonus = 3
         elif len(user_message) > 20: 
             bonus = 2
+            
+        db.add_affinity(user_id, message.guild.id, bonus) 
+        points = db.get_affinity(user_id, message.guild.id)
         
         target_channel_id = bot.server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
             if user_id != SPECIAL_USER_ID: 
                 return
-
-        db.add_affinity(user_id, message.guild.id, bonus) 
-        points = db.get_affinity(user_id, message.guild.id)
 
         history = bot.conversation_history[user_id]
         history_text = "\n".join([f"{'Anh' if h['role']=='user' else 'Em'}: {h['content']}" for h in history])
