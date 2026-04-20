@@ -58,8 +58,8 @@ class HelpSelect(discord.ui.Select):
         
         elif selection == "📜 Lệnh người dùng":
             embed.title = "📜 Danh sách lệnh hệ thống"
-            embed.add_field(name="Trò chuyện", value="`/check_affinity`: Check điểm\n`/leaderboard`: Bảng xếp hạng\n`/resetmemory`: Reset chat", inline=False)
-            embed.add_field(name="Hẹn hò & Quà tặng", value="`/shop`: Mua quà\n`/bag`: Túi đồ\n`/gift`: Tặng quà\n`/date`: Đổi địa điểm", inline=False)
+            embed.add_field(name="Trò chuyện", value="`$affinity`: Check điểm\n`$leaderboard`: Bảng xếp hạng\n`resetmemory`: Reset chat", inline=False)
+            embed.add_field(name="Hẹn hò & Quà tặng", value="`$shop`: Mua quà\n`$bag`: Túi đồ\n`$gift`: Tặng quà\n`$date`: Đổi địa điểm\n`$give`:nhận thưởng hàng ngày", inline=False)
 
         elif selection == "⚙️ Lệnh quản trị":
             embed.title = "⚙️ Lệnh Owner & Admin"
@@ -84,8 +84,8 @@ class MahiruCommands(commands.Cog):
         self.conversation_history = {}
         self.server_channels = {}
 
-    @app_commands.command(name="help", description="Xem hướng dẫn sử dụng bot Mahiru")
-    async def help_command(self, interaction: discord.Interaction):
+    @commands.command(name="help")
+    async def help_command(self, ctx):
         embed = discord.Embed(
             title="🌸 Hướng dẫn sử dụng Mahiru-chan",
             description="Chào cậu! Mình là Mahiru. Cậu muốn mình hướng dẫn về phần nào dưới đây?",
@@ -95,10 +95,10 @@ class MahiruCommands(commands.Cog):
         # Thêm ảnh GIF cho sinh động
         embed.set_image(url="https://media.tenor.com/BqAF9L-2EjAAAAAC/mahiru.gif")
         
-        await interaction.response.send_message(embed=embed, view=HelpView(self.bot, interaction.user.id))
+        await interaction.response.send_message(embed=embed, view=HelpView(self.bot, ctx.author.id))
         
-    @app_commands.command(name="check_affinity", description="Xem độ thân mật của bạn")
-    async def check_affinity(self, interaction: discord.Interaction):
+    @commands.command(name="affinity")
+    async def check_affinity(self, ctx):
         points = db.get_affinity(interaction.user.id, interaction.guild.id)
         
         # 7 mốc danh hiệu
@@ -126,7 +126,7 @@ class MahiruCommands(commands.Cog):
         bar = "💖" * progress + "🖤" * (10 - progress)
         embed.add_field(name="Tiến trình", value=bar, inline=False)
         
-        await interaction.response.send_message(embed=embed)
+        await ctx.send(embed=embed)
         
     
     @app_commands.command(name="setlovername", description="Đổi nickname đặc biệt cho người yêu 💕")
@@ -149,8 +149,8 @@ class MahiruCommands(commands.Cog):
             )
             await interaction.response.send_message(embed=embed, ephemeral=False)
     
-    @app_commands.command(name="setchannel", description="Thiết lập kênh cố định cho bot (Owner only)")
-    async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
+    @commands.command(name="setchannel")
+    async def setchannel(self, ctx, channel: discord.TextChannel = None):
         if interaction.user.id != SPECIAL_USER_ID:
             embed_error = discord.Embed(
                 title="🚫 U have no perm kiddo",
@@ -170,28 +170,28 @@ class MahiruCommands(commands.Cog):
                 color=discord.Color.from_rgb(255, 182, 193) # Màu hồng nhạt
             )
 
-            await interaction.response.send_message(embed=embed_success)
+            await ctx.send(embed=embed_success)
 
         except Exception as e:
-            await interaction.response.send_message(f"❌ Có lỗi xảy ra: {e}", ephemeral=True)
+            await ctx.send(f"❌ Có lỗi xảy ra: {e}", ephemeral=True)
         
-    @app_commands.command(name="clearchannel", description="Cho phép bot chat mọi kênh ở server này")
-    async def clearchannel(self, interaction: discord.Interaction):
+    @commands.command(name="clearchannel")
+    async def clearchannel(self, ctx):
         global server_channels
         if interaction.guild_id in server_channels:
             del self.bot.server_channels[interaction.guild_id]
-            await interaction.response.send_message(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
+            await ctx.send(" Đã reset! Giờ em sẽ chat ở bất cứ kênh nào anh tag em.")
         else:
-            await interaction.response.send_message("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
+            await ctx.send("Server này vốn ko có gì để lưu r ạ :3!", ephemeral=False)
     
-    @app_commands.command(name="resetmemory", description="Xoá lịch sử hội thoại của bạn với bot")
-    async def resetmemory(self, interaction: discord.Interaction):
+    @commands.command(name="resetmemory")
+    async def resetmemory(self, ctx):
         user_id = interaction.user.id
         if user_id in conversation_history:
             self.conversation_history[user_id].clear()
-            await interaction.response.send_message("🧹 Lịch sử hội thoại của bạn đã được xoá sạch!", ephemeral=True)
+            await ctx.send("🧹 Lịch sử hội thoại của bạn đã được xoá sạch!", ephemeral=True)
         else:
-            await interaction.response.send_message("❌ Bạn chưa có lịch sử hội thoại nào để xoá.", ephemeral=True)
+            await ctx.send("❌ Bạn chưa có lịch sử hội thoại nào để xoá.", ephemeral=True)
     
     @app_commands.command(name="resetallmemory", description="Xoá toàn bộ lịch sử hội thoại (owner only)")
     async def resetallmemory(self, interaction: discord.Interaction):
@@ -216,8 +216,8 @@ class MahiruCommands(commands.Cog):
             await interaction.response.send_message("Quyền đâu mà sync?")
     
     
-    @app_commands.command(name="leaderboard", description="Xem top 10 xp trong server")
-    async def leaderboard(self, interaction: discord.Interaction):
+    @commands.command(name="leaderboard", aliases=["lb"])
+    async def leaderboard(self, ctx):
         # Truyền guild ID vào hàm lấy top
         top_users = db.get_leaderboard(interaction.guild.id, 10)
         
@@ -238,7 +238,7 @@ class MahiruCommands(commands.Cog):
             leaderboard_text += f"{medal} {name} — `{points} điểm` \n"
     
         embed.add_field(name="Top điểm thân mật", value=leaderboard_text, inline=False)
-        await interaction.response.send_message(embed=embed)
+        await ctx.send(embed=embed)
     
     @app_commands.command(name="clear_database_data", description="Xóa sạch toàn bộ database (Owner Only)")
     async def clear_database_data(self, interaction: discord.Interaction):
@@ -262,9 +262,9 @@ class MahiruCommands(commands.Cog):
                 file = discord.File(db.DB_PATH)
                 await interaction.response.send_message("Đây là file database của anh nè~", file=file, ephemeral=True)
             else:
-                await interaction.response.send_message("Em không tìm thấy file database đâu cả... :<", ephemeral=True)
+                await interaction.response.send_message("Em không tìm thấy file database đâu cả... :<", ephemeral=False)
         else:
-            await interaction.response.send_message("❌ Lệnh này nguy hiểm lắm, chỉ chồng em mới được dùng thôi!", ephemeral=False )
+            await interaction.response.send_message("❌ Lệnh này nguy hiểm lắm, chỉ tao(owner) ms đc dùng thôi nhóc", ephemeral=False )
     
 
 async def setup(bot):
