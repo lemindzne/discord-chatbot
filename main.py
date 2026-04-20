@@ -110,7 +110,8 @@ async def on_message(message: discord.Message):
         
         target_channel_id = bot.server_channels.get(message.guild.id)
         if target_channel_id and message.channel.id != target_channel_id:
-            return
+            if user_id != SPECIAL_USER_ID: 
+                return
 
         db.add_affinity(user_id, message.guild.id, bonus) 
         points = db.get_affinity(user_id, message.guild.id)
